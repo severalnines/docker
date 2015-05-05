@@ -7,9 +7,10 @@
 3. [Image Description](#image-description)
 4. [Build Container](#build-container)
 5. [Run Container](#run-container)
-5. [Optional Docker System Environment](#optional-docker-system-environment)
-5. [Limitations](#limitations)
-6. [Development](#development)
+6. [Optional Docker System Environment](#optional-docker-system-environment)
+7. [Add an Existing Server/Cluster](#add-an-existing-cluster)
+8. [Limitations](#limitations)
+9. [Development](#development)
 
 ##Overview
 
@@ -26,7 +27,7 @@ Supported database servers/clusters:
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
-###Requirements
+##Requirements
 
 Make sure you meet following criteria prior to the deployment:
 
@@ -74,7 +75,7 @@ $ cd docker/[operating system]
 $ docker build -t severalnines/clustercontrol:[operating system] .
 ```
 
-** Replace [operating system] with your choice of OS distribution; redhat, debian, ubuntu.
+** Replace `[operating system]` with your choice of OS distribution; redhat, debian, ubuntu.
 
 Verify with:
 ```bash
@@ -93,7 +94,7 @@ However, we would recommend users to assign a container name and map the host's 
 $ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:[operating system]
 ```
 
-** Replace [operating system] with your choice of OS distribution; redhat, debian, ubuntu.
+** Replace `[operating system]` with your choice of OS distribution; redhat, debian, ubuntu.
 
 Verify with:
 ```bash
@@ -137,11 +138,11 @@ $ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/cluste
 
 1. Ensure your database cluster is up and running. Supported database cluster is listed under [Overview](#overview) section.
 2. Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 192.168.10.131,192.168.10.132,192.168.10.133 run following command on ClusterControl node:
-	```bash
-	$ ssh-copy-id 192.168.10.131
-	$ ssh-copy-id 192.168.10.132
-	$ ssh-copy-id 192.168.10.133
-	```
+```bash
+$ ssh-copy-id 192.168.10.131
+$ ssh-copy-id 192.168.10.132
+$ ssh-copy-id 192.168.10.133
+```
 3. Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
 
 
