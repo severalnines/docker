@@ -88,7 +88,7 @@ fi
 
 ## Start the services
 service cmon restart
-service sshd restart
+service ssh restart
 
 ## generate a README-IMPORTANT! file to notify the generated credentials
 if [ ! -e $BANNER_FILE ]; then
@@ -101,4 +101,4 @@ if [ ! -e $BANNER_FILE ]; then
 	echo "!! Remove this file once you notified !!" >> $BANNER_FILE
 fi
 
-/usr/sbin/httpd -D FOREGROUND
+/usr/sbin/apache2 -D FOREGROUND
