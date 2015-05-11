@@ -5,9 +5,9 @@
 1. [Overview](#overview)
 2. [Requirements](#requirements)
 3. [Image Description](#image-description)
-4. [Build Container](#build-container)
-5. [Run Container](#run-container)
-6. [Optional Docker System Environment](#optional-docker-system-environment)
+4. [Run Container](#run-container)
+5. [Optional Docker System Environment](#optional-docker-system-environment)
+6. [Build Image](#build-image)
 7. [Add an Existing Server/Cluster](#add-an-existing-cluster)
 8. [Limitations](#limitations)
 9. [Development](#development)
@@ -72,22 +72,6 @@ The image consists of ClusterControl and all of its components:
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * An auto-generated SSH key for ClusterControl usage.
 
-##Build Container
-
-To build container, download the Docker related files available at our Github repository:
-```bash
-$ git clone https://github.com/severalnines/docker
-$ cd docker/[operating system]
-$ docker build -t severalnines/clustercontrol:[operating system] .
-```
-
-** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
-
-Verify with:
-```bash
-$ docker images
-```
-
 ##Run Container
 
 To run a ClusterControl container, the simplest command would be:
@@ -138,6 +122,22 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
 $ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:debian-wheezy
+```
+
+##Build Image
+
+To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker):
+```bash
+$ git clone https://github.com/severalnines/docker
+$ cd docker/[operating system]
+$ docker build -t severalnines/clustercontrol:[operating system] .
+```
+
+** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
+
+Verify with:
+```bash
+$ docker images
 ```
 
 ##Adding an Existing Cluster
