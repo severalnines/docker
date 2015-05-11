@@ -45,20 +45,26 @@ $ docker pull severalnines/clustercontrol
 
 Optionally, you can pull specific image based on your preferred operating system. For Ubuntu (14.04 LTS base image):
 ```bash
-$ docker pull severalnines/clustercontrol:ubuntu
+$ docker pull severalnines/clustercontrol:ubuntu-trusty
 ```
 
 For Debian (Debian Wheezy base image):
 ```bash
-$ docker pull severalnines/clustercontrol:debian
+$ docker pull severalnines/clustercontrol:debian-wheezy
 ```
 
-For CentOS/Redhat 5/6 (CentOS 6.6 base image):
+For CentOS/Redhat 6 (CentOS 6.6 base image):
 ```bash
-$ docker pull severalnines/clsutercontrol:redhat 
-$ docker pull severalnines/clsutercontrol:centos
+$ docker pull severalnines/clustercontrol:redhat6
+$ docker pull severalnines/clustercontrol:centos6
 ```
-** CentOS/Redhat 7 is yet to be supported. redhat and centos tags are aliases.
+
+For CentOS/Redhat 7 (CentOS 7.1 base image):
+```bash
+$ docker pull severalnines/clustercontrol:redhat7
+$ docker pull severalnines/clustercontrol:centos7
+```
+** redhat and centos tags are aliases.
 
 The image consists of ClusterControl and all of its components:
 * ClusterControl controller, cmonapi and UI installed via Severalnines package repository.
@@ -75,7 +81,7 @@ $ cd docker/[operating system]
 $ docker build -t severalnines/clustercontrol:[operating system] .
 ```
 
-** Replace `[operating system]` with your choice of OS distribution; redhat, debian, ubuntu.
+** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
 
 Verify with:
 ```bash
@@ -94,7 +100,7 @@ However, we would recommend users to assign a container name and map the host's 
 $ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:[operating system]
 ```
 
-** Replace `[operating system]` with your choice of OS distribution; redhat, debian, ubuntu.
+** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
 
 Verify with:
 ```bash
@@ -117,7 +123,7 @@ $ docker exec -it clustercontrol /bin/bash
 
 Use -e flag to specify the environment variable, for example:
 ```bash
-$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:ubuntu
+$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:ubuntu-trusty
 ```
 
 * -p : Map the exposed port from host to the container. By default following ports are exposed on the container:
@@ -131,24 +137,24 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:debian
+$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:debian-wheezy
 ```
 
 ##Adding an Existing Cluster
 
 1. Ensure your database cluster is up and running. Supported database cluster is listed under [Overview](#overview) section.
-2. Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 192.168.10.131,192.168.10.132,192.168.10.133 run following command on ClusterControl node:
+2. Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 172.17.0.11,172.17.0.12,172.17.0.13 run following command on ClusterControl node:
 ```bash
-$ ssh-copy-id 192.168.10.131
-$ ssh-copy-id 192.168.10.132
-$ ssh-copy-id 192.168.10.133
+$ ssh-copy-id 172.17.0.11
+$ ssh-copy-id 172.17.0.12
+$ ssh-copy-id 172.17.0.13
 ```
 3. Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
 
 
 ##Limitations
 
-The image are tested and built using Docker version 1.5.0-dev, build fc0329b/1.5.0 and Docker version 1.6.0, build bdbc177 on CentOS 7.
+The image are tested and built using Docker version 1.5.0-dev, build fc0329b and Docker version 1.6.0, build bdbc177 on CentOS 7.1.
 
 The image does support bootstrapping MySQL servers with IP address only (it expects skip-name-resolve is enabled on all MySQL nodes). However, for MongoDB you can specify hostname as described under MongoDB Specific Options.
 
