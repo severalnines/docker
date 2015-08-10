@@ -36,6 +36,7 @@ RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt &
 
 VOLUME ["/var/www/html","/var/lib/mysql","/etc"]
 
+COPY change_ip.sh /root/change_ip.sh
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
