@@ -1,6 +1,4 @@
-## ClusterControl 1.2.10, Percona Server 5.6, CentOS 6.6 64bit
-## The OS distribution running on managed nodes must be the same with controller node
-## If your database nodes are running on Ubuntu/Debian, use clustercontrol-debian Dockerfile instead
+## ClusterControl 1.2.11, Percona Server 5.6, CentOS 6.6 64bit
 
 FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
