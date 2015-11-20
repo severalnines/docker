@@ -1,6 +1,6 @@
 # ClusterControl Docker Image #
 
-##Table of Contents
+## Table of Contents ##
 
 1. [Overview](#overview)
 2. [Requirements](#requirements)
@@ -12,7 +12,7 @@
 8. [Limitations](#limitations)
 9. [Development](#development)
 
-##Overview
+## Overview ##
 
 ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manager and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to manage and monitor an existing database infrastructure. 
 
@@ -22,49 +22,27 @@ Supported database servers/clusters:
 * MariaDB Galera Cluster
 * MySQL replication
 * MySQL single instance
-* MongoDB/TokuMX Replica Set
+* MySQL Cluster (NDB)
+* MongoDB/TokuMX sharded cluster
+* MongoDB/TokuMX replica set
 * PostgreSQL single instance
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
-##Requirements
+## Requirements ##
 
 Make sure you meet following criteria prior to the deployment:
 
-* ClusterControl node must run on the same operating system distribution with your database nodes/containers (mixing Debian with Ubuntu or CentOS with Red Hat is possible)
 * Make sure your database cluster is up and running before importing to ClusterControl.
-* Root user must be configured and accessible via SSH using password on all managed nodes. Sudoers are not supported at the moment.
+* Only root user is supported at moment. No sudo user.
 * SELinux/AppArmor will be turned off.
 
-##Image Description
+## Image Description ##
 
-To pull all ClusterControl images, simply:
+To pull ClusterControl images, simply:
 ```bash
 $ docker pull severalnines/clustercontrol
 ```
-
-Optionally, you can pull specific image based on your preferred operating system. For Ubuntu (14.04 LTS base image):
-```bash
-$ docker pull severalnines/clustercontrol:ubuntu-trusty
-```
-
-For Debian (Debian Wheezy base image):
-```bash
-$ docker pull severalnines/clustercontrol:debian-wheezy
-```
-
-For CentOS/Redhat 6 (CentOS 6.6 base image):
-```bash
-$ docker pull severalnines/clustercontrol:redhat6
-$ docker pull severalnines/clustercontrol:centos6
-```
-
-For CentOS/Redhat 7 (CentOS 7.1 base image):
-```bash
-$ docker pull severalnines/clustercontrol:redhat7
-$ docker pull severalnines/clustercontrol:centos7
-```
-** redhat and centos tags are aliases.
 
 The image consists of ClusterControl and all of its components:
 * ClusterControl controller, cmonapi and UI installed via Severalnines package repository.
@@ -72,19 +50,17 @@ The image consists of ClusterControl and all of its components:
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * An auto-generated SSH key for ClusterControl usage.
 
-##Run Container
+## Run Container ##
 
 To run a ClusterControl container, the simplest command would be:
 ```bash
-$ docker run -d severalnines/clustercontrol:[operating system]
+$ docker run -d severalnines/clustercontrol
 ```
 
 However, we would recommend users to assign a container name and map the host's port with exposed HTTP or HTTPS port on container:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:[operating system]
+$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
 ```
-
-** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
 
 Verify with:
 ```bash
@@ -100,14 +76,14 @@ To access the ClusterControl's console:
 $ docker exec -it clustercontrol /bin/bash
 ```
 
-##Optional Docker System Environment
+## Optional Docker System Environment ##
 
 * `CMON_PASSWORD`: MySQL password for user 'cmon'. Default to 'cmon'.
 * `MYSQL_ROOT_PASSWORD`: MySQL root password for the ClusterControl container. Default to 'password'.
 
 Use -e flag to specify the environment variable, for example:
 ```bash
-$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:ubuntu-trusty
+$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol
 ```
 
 * -p : Map the exposed port from host to the container. By default following ports are exposed on the container:
@@ -121,46 +97,46 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:debian-wheezy
+$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol
 ```
 
-##Build Image
+## Build Image ##
 
 To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker):
 ```bash
 $ git clone https://github.com/severalnines/docker
-$ cd docker/[operating system]
-$ docker build -t severalnines/clustercontrol:[operating system] .
+$ cd docker
+$ docker build -t severalnines/clustercontrol .
 ```
-
-** Replace `[operating system]` with your choice of OS distribution; redhat6/7, centos6/7, debian-wheezy, ubuntu-trusty.
 
 Verify with:
 ```bash
 $ docker images
 ```
 
-##Adding an Existing Cluster
+## Adding an Existing Cluster ##
 
-1. Ensure your database cluster is up and running. Supported database cluster is listed under [Overview](#overview) section.
-2. Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 172.17.0.11,172.17.0.12,172.17.0.13 run following command on ClusterControl node:
+1) Ensure your database cluster is up and running. Supported database cluster is listed under [Overview](#overview) section.
+2) Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 172.17.0.11,172.17.0.12,172.17.0.13 run following command on ClusterControl node:
 ```bash
 $ ssh-copy-id 172.17.0.11
 $ ssh-copy-id 172.17.0.12
 $ ssh-copy-id 172.17.0.13
 ```
-3. Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
+3) Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
 
 
-##Limitations
+## Limitations ##
 
-The image are tested and built using Docker version 1.5.0-dev, build fc0329b and Docker version 1.6.0, build bdbc177 on CentOS 7.1.
+* The image are tested and built using Docker version 1.5.0-dev, build fc0329b and Docker version 1.6.0, build bdbc177 on CentOS 7.1.
 
-The image does support bootstrapping MySQL servers with IP address only (it expects skip-name-resolve is enabled on all MySQL nodes). However, for MongoDB you can specify hostname as described under MongoDB Specific Options.
+* Deploying a new external DB node/cluster (out of Docker's network) is not working since the DB node will see different IP address compare to what CMON sees internally.
 
-[ClusterControl known issues and limitations](http://www.severalnines.com/docs/clustercontrol-troubleshooting-guide/known-issues-limitations).
+* The image only supports bootstrapping MySQL servers with IP address where it expects skip-name-resolve is enabled on all MySQL nodes. However, for MongoDB, you can specify hostname instead.
 
-##Development
+* [ClusterControl known issues and limitations](http://severalnines.com/docs/troubleshooting.html#known-issues-and-limitations).
+
+## Development ##
 
 Please report bugs, improvements or suggestions via our support channel: [https://support.severalnines.com](https://support.severalnines.com) 
 
