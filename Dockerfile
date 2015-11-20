@@ -1,12 +1,12 @@
-## ClusterControl 1.2.10, Percona Server 5.6, CentOS 7.1 64bit
+## ClusterControl 1.2.10, Percona Server 5.6, CentOS 6.6 64bit
 ## The OS distribution running on managed nodes must be the same with controller node
 ## If your database nodes are running on Ubuntu/Debian, use clustercontrol-debian Dockerfile instead
 
-FROM centos:7
+FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils hostname python-setuptools sysvinit-tools clustercontrol clustercontrol-cmonapi clustercontrol-controller Percona-Server-server-56 percona-xtrabackup openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl
 
 # install packages
 RUN yum -y install wget && \
@@ -17,11 +17,6 @@ RUN yum -y install wget && \
 
 ## configure MySQL
 ADD my.cnf /etc/my.cnf
-
-# supervisord for services
-RUN easy_install supervisor
-ADD supervisord.conf /etc/
-RUN chown root.root /etc/supervisord.conf
 
 ## post-installation: setting up Apache
 RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
@@ -41,6 +36,7 @@ RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt &
 
 VOLUME ["/var/www/html","/var/lib/mysql","/etc"]
 
+COPY change_ip.sh /root/change_ip.sh
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
