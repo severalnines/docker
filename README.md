@@ -29,14 +29,6 @@ Supported database servers/clusters:
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
-## Requirements ##
-
-Make sure you meet following criteria prior to the deployment:
-
-* Make sure your database cluster is up and running before importing to ClusterControl.
-* Only root user is supported at moment. No sudo user.
-* SELinux/AppArmor will be turned off.
-
 ## Image Description ##
 
 To pull ClusterControl images, simply:
@@ -45,7 +37,7 @@ $ docker pull severalnines/clustercontrol
 ```
 
 The image consists of ClusterControl and all of its components:
-* ClusterControl controller, cmonapi and UI installed via Severalnines package repository.
+* ClusterControl controller, cmonapi, UI and NodeJS packages installed via Severalnines repository.
 * MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * An auto-generated SSH key for ClusterControl usage.
@@ -131,10 +123,6 @@ $ ssh-copy-id 172.17.0.13
 ## Limitations ##
 
 * The image are tested and built using Docker version 1.5.0-dev, build fc0329b and Docker version 1.6.0, build bdbc177 on CentOS 7.1.
-
-* Deploying a new external DB node/cluster (out of Docker's network) is not working since the DB node will see different IP address compare to what CMON sees internally.
-
-* The image only supports bootstrapping MySQL servers with IP address where it expects skip-name-resolve is enabled on all MySQL nodes. However, for MongoDB, you can specify hostname instead.
 
 * [ClusterControl known issues and limitations](http://severalnines.com/docs/troubleshooting.html#known-issues-and-limitations).
 

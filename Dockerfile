@@ -1,10 +1,10 @@
-## ClusterControl 1.2.11, Percona Server 5.6, CentOS 6.6 64bit
+## ClusterControl 1.2.12, Percona Server 5.6, CentOS 6.6 64bit
 
 FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-nodejs Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl
 
 # install packages
 RUN yum -y install wget && \
