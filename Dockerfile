@@ -1,4 +1,5 @@
 ## ClusterControl 1.2.12, Percona Server 5.6, CentOS 6.6 64bit
+## The OS distribution running on managed nodes must be the same with controller node
 
 FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
@@ -7,6 +8,7 @@ MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-nodejs Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl
 
 # install packages
+RUN yum clean all
 RUN yum -y install wget && \
 	rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
 	wget www.severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \

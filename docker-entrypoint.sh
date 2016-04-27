@@ -25,6 +25,7 @@ echo 'Checking MySQL daemon..'
 # import data
 if [ ! -e $MYSQL_CMON_CNF ]; then
 	# configure ClusterControl Controller
+	CMON_TOKEN=$(python -c 'import uuid; print uuid.uuid4()' | sha1sum | cut -f1 -d' ')
 	echo "Setting up minimal $CMON_CONFIG.."
 	cat /dev/null > $CMON_CONFIG
 	cat > "$CMON_CONFIG" << EOF
@@ -32,16 +33,18 @@ mysql_port=3306
 mysql_hostname=$IP_ADDRESS
 mysql_password=$cmon_password
 hostname=$IP_ADDRESS
+rpc_key=$CMON_TOKEN
 EOF
 
 	echo 'Setting up ClusterControl UI and CMONAPI..'
 	## configure ClusterControl UI & CMONAPI
-	CMON_TOKEN=$(python -c 'import uuid; print uuid.uuid4()' | sha1sum | cut -f1 -d' ')
 	sed -i "s|GENERATED_CMON_TOKEN|$CMON_TOKEN|g" $CMONAPI_BOOTSTRAP
+	sed -i "s|^define('ENABLE_CC_API_TOKEN_CHECK'.*|define('ENABLE_CC_API_TOKEN_CHECK', '1');|g" $CMONAPI_BOOTSTRAP
 	sed -i "s|MYSQL_PASSWORD|$cmon_password|g" $CMONAPI_DATABASE
 	sed -i "s|MYSQL_PORT|3306|g" $CMONAPI_DATABASE
 	sed -i "s|DBPASS|$cmon_password|g" $CCUI_BOOTSTRAP
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
+	sed -i "s|RPCTOKEN|$CMON_TOKEN|g" $CCUI_BOOTSTRAP
 
 	echo 'Generating SSH key..'
 	## configure SSH

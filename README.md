@@ -14,7 +14,7 @@
 
 ## Overview ##
 
-ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manager and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to manage and monitor an existing database infrastructure. 
+ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to manage and monitor an existing database infrastructure. 
 
 Supported database servers/clusters:
 * Galera Cluster for MySQL
@@ -83,7 +83,7 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 	* 80 - HTTP
 	* 443 - HTTPS
 	* 3306 - MySQL
-	* 9500 - cmon
+	* 9500 - cmon RPC
 	* 9600 - HAproxy stats (if HAproxy is installed in this container)
 	* 9999 - netcat (backup streaming)
 
