@@ -112,9 +112,10 @@ $ docker images
 
 2) Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 172.17.0.11,172.17.0.12,172.17.0.13 run following command on ClusterControl node:
 ```bash
-$ ssh-copy-id 172.17.0.11
-$ ssh-copy-id 172.17.0.12
-$ ssh-copy-id 172.17.0.13
+[host]$ docker exec -it [clustercontrol_container_name] /bin/bash
+[container]$ ssh-copy-id 172.17.0.11
+[container]$ ssh-copy-id 172.17.0.12
+[container]$ ssh-copy-id 172.17.0.13
 ```
 
 3) Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
