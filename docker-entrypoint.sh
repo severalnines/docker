@@ -12,8 +12,9 @@ CMONAPI_BOOTSTRAP=$WWWROOT/cmonapi/config/bootstrap.php
 CMONAPI_DATABASE=$WWWROOT/cmonapi/config/database.php
 CCUI_BOOTSTRAP=$WWWROOT/clustercontrol/bootstrap.php
 BANNER_FILE='/root/README_IMPORTANT'
-IP_ADDRESS=$(hostname -I | awk {'print $1'} | tr -d ' ')
 MYSQL_CMON_CNF=/etc/my_cmon.cnf
+IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 | head -1)
+[ -z $IP_ADDRESS ] && IP_ADDRESS=$(hostname -I | awk {'print $1'} | tr -d ' ')
 
 # check mysql status
 DATADIR=/var/lib/mysql
