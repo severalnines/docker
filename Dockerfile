@@ -1,4 +1,5 @@
 ## ClusterControl 1.4.0, Percona Server 5.6, CentOS 6.6 64bit
+## clustercontrol-1.4.0-2585, clustercontrol-controller-1.4.0-1651, clustercontrol-cmonapi-1.4.0-247
 
 FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
