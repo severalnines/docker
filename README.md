@@ -75,7 +75,7 @@ $ docker exec -it clustercontrol /bin/bash
 
 Use -e flag to specify the environment variable, for example:
 ```bash
-$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol
+$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:nightly
 ```
 
 * -p : Map the exposed port from host to the container. By default following ports are exposed on the container:
@@ -89,12 +89,12 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol
+$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:nightly
 ```
 
 ## Build Image ##
 
-To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker):
+To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker) on 'devel' branch:
 ```bash
 $ git clone -b devel https://github.com/severalnines/docker
 $ cd docker
@@ -128,7 +128,7 @@ docker logs -f clustercontrol
 Or, open ClusterControl UI and look under Activity (top menu).
 
 
-4) To scale up, just create another nodes and ClusterControl will add into the cluster automatically:
+4) To scale up, just run new containers and ClusterControl will add them into the cluster automatically:
 ```bash
 docker run -d --name galera4 -p 6664:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
 docker run -d --name galera5 -p 6665:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
