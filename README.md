@@ -96,9 +96,9 @@ $ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/cluste
 
 To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker):
 ```bash
-$ git clone https://github.com/ashraf-s9s/clustercontrol-docker
-$ cd clustercontrol-docker
-$ docker build -t severalnines/clustercontrol:nightly .
+$ git clone -b devel https://github.com/severalnines/docker
+$ cd docker
+$ docker build --rm -t severalnines/clustercontrol:nightly .
 ```
 
 Verify with:
