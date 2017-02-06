@@ -113,11 +113,13 @@ $ docker images
 docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:nightly
 ```
 
-2) Run the DB containers (replace `CC_HOST` value accordingly):
+2) Run the DB containers (`CC_HOST` is the ClusterControl container's IP):
 ```bash
-docker run -d --name galera1 -p 6661:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera2 -p 6662:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera3 -p 6663:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+# find the ClusterControl container's IP address
+CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
+docker run -d --name galera1 -p 6661:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera2 -p 6662:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera3 -p 6663:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
 ```
 
 3) ClusterControl will automatically pick the new containers to deploy. If it finds the number of containers is equal or greater than `INITIAL_CLUSTER_SIZE`, the cluster deployment shall begin. You can verify that with:
@@ -130,8 +132,10 @@ Or, open ClusterControl UI and look under Activity (top menu).
 
 4) To scale up, just run new containers and ClusterControl will add them into the cluster automatically:
 ```bash
-docker run -d --name galera4 -p 6664:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera5 -p 6665:3306 -e CC_HOST=172.17.0.2 -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+# find the ClusterControl container's IP address
+CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
+docker run -d --name galera4 -p 6664:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera5 -p 6665:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
 ```
 5) Repeat step #3.
 
