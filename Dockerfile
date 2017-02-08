@@ -44,3 +44,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 ## cmon 9500, netcat 9999, haproxy-stats 9600
 EXPOSE 22 443 3306 80 9500 9501 9999 9600
+HEALTHCHECK CMD curl -sSf http://localhost/clustercontrol/ > /dev/null || exit 1
