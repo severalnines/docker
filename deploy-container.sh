@@ -70,7 +70,6 @@ check_new_containers_to_scale() {
 		echo ""
 		
 		add_container "$scale_cluster" "${trim_nodes}"
-
 	fi
 
 }
