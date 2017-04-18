@@ -1,4 +1,4 @@
-# ClusterControl Docker Image - Development (nightly) version#
+# ClusterControl Docker Image #
 
 ## Table of Contents ##
 
@@ -33,7 +33,7 @@ More details at [Severalnines](http://www.severalnines.com/clustercontrol) websi
 
 To pull ClusterControl images, simply:
 ```bash
-$ docker pull severalnines/clustercontrol:nightly
+$ docker pull severalnines/clustercontrol
 ```
 
 The image consists of ClusterControl and all of its components:
@@ -46,12 +46,12 @@ The image consists of ClusterControl and all of its components:
 
 To run a ClusterControl container, the simplest command would be:
 ```bash
-$ docker run -d severalnines/clustercontrol:nightly
+$ docker run -d severalnines/clustercontrol
 ```
 
 However, we would recommend users to assign a container name and map the host's port with exposed HTTP or HTTPS port on container:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:nightly
+$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
 ```
 
 Verify with:
@@ -89,7 +89,7 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:nightly
+$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol
 ```
 
 ## Build Image ##
@@ -98,7 +98,7 @@ To build Docker image, download the Docker related files available at [our Githu
 ```bash
 $ git clone -b devel https://github.com/severalnines/docker
 $ cd docker
-$ docker build --rm -t severalnines/clustercontrol:nightly .
+$ docker build --rm -t severalnines/clustercontrol .
 ```
 
 Verify with:
@@ -110,7 +110,7 @@ $ docker images
 
 1) Run the ClusterControl container:
 ```bash
-docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:nightly
+docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
 ```
 
 2) Run the DB containers (`CC_HOST` is the ClusterControl container's IP):
@@ -129,7 +129,7 @@ docker run -d --name galera2 -p 6662:3306 --link clustercontrol:clustercontrol -
 docker run -d --name galera3 -p 6663:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
 ```
 
-In Docker Swarm mode, `centos-ssh` will default to look for 'clustercontrol' as the `CC_HOST`. If you create the ClusterControl container with 'clustercontrol' as the service name, you can skip defining `CC_HOST`.
+In Docker Swarm mode, `centos-ssh` will default to look for 'cc_clustercontrol' as the `CC_HOST`. If you create the ClusterControl container with 'cc_clustercontrol' as the service name, you can skip defining `CC_HOST`.
 
 3) ClusterControl will automatically pick the new containers to deploy. If it finds the number of containers is equal or greater than `INITIAL_CLUSTER_SIZE`, the cluster deployment shall begin. You can verify that with:
 ```bash
