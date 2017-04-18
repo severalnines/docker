@@ -1,4 +1,4 @@
-# ClusterControl Docker Image #
+# ClusterControl Docker Image - Development (nightly) version#
 
 ## Table of Contents ##
 
@@ -33,7 +33,7 @@ More details at [Severalnines](http://www.severalnines.com/clustercontrol) websi
 
 To pull ClusterControl images, simply:
 ```bash
-$ docker pull severalnines/clustercontrol
+$ docker pull severalnines/clustercontrol:nightly
 ```
 
 The image consists of ClusterControl and all of its components:
@@ -46,17 +46,17 @@ The image consists of ClusterControl and all of its components:
 
 To run a ClusterControl container, the simplest command would be:
 ```bash
-$ docker run -d severalnines/clustercontrol
+$ docker run -d severalnines/clustercontrol:nightly
 ```
 
 However, we would recommend users to assign a container name and map the host's port with exposed HTTP or HTTPS port on container:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
+$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:nightly
 ```
 
 Verify with:
 ```bash
-$ docker logs clustercontrol
+$ docker logs -f clustercontrol
 $ docker ps # ensure the container is started and running
 ```
 
@@ -75,7 +75,7 @@ $ docker exec -it clustercontrol /bin/bash
 
 Use -e flag to specify the environment variable, for example:
 ```bash
-$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol
+$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:nightly
 ```
 
 * -p : Map the exposed port from host to the container. By default following ports are exposed on the container:
@@ -89,16 +89,16 @@ $ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_
 
 Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol
+$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol:nightly
 ```
 
 ## Build Image ##
 
-To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker):
+To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker) on 'devel' branch:
 ```bash
-$ git clone https://github.com/severalnines/docker
+$ git clone -b devel https://github.com/severalnines/docker
 $ cd docker
-$ docker build -t severalnines/clustercontrol .
+$ docker build --rm -t severalnines/clustercontrol:nightly .
 ```
 
 Verify with:
@@ -106,26 +106,47 @@ Verify with:
 $ docker images
 ```
 
-## Adding an Existing Cluster ##
+## How to Use ##
 
-1) Ensure your database cluster is up and running. Supported database cluster is listed under [Overview](#overview) section.
-
-2) Copy the auto-generated SSH key on ClusterControl to the target database containers/nodes. For example, if your database containers' IP address is 172.17.0.11,172.17.0.12,172.17.0.13 run following command on ClusterControl node:
+1) Run the ClusterControl container:
 ```bash
-[host]$ docker exec -it [clustercontrol_container_name] /bin/bash
-[container]$ ssh-copy-id 172.17.0.11
-[container]$ ssh-copy-id 172.17.0.12
-[container]$ ssh-copy-id 172.17.0.13
+docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol:nightly
 ```
 
-3) Access the ClusterControl UI and click on *Add Existing Server/Cluster* button. Enter required details and click *Add Cluster*. 
+2) Run the DB containers (`CC_HOST` is the ClusterControl container's IP):
+```bash
+# find the ClusterControl container's IP address
+CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
+docker run -d --name galera1 -p 6661:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera2 -p 6662:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera3 -p 6663:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+```
+
+Container linking is also supported (assume the ClusterControl container name is 'clustercontrol'):
+```bash
+docker run -d --name galera1 -p 6661:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera2 -p 6662:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera3 -p 6663:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+```
+
+In Docker Swarm mode, `centos-ssh` will default to look for 'clustercontrol' as the `CC_HOST`. If you create the ClusterControl container with 'clustercontrol' as the service name, you can skip defining `CC_HOST`.
+
+3) ClusterControl will automatically pick the new containers to deploy. If it finds the number of containers is equal or greater than `INITIAL_CLUSTER_SIZE`, the cluster deployment shall begin. You can verify that with:
+```bash
+docker logs -f clustercontrol
+```
+
+Or, open ClusterControl UI and look under Activity (top menu).
 
 
-## Limitations ##
-
-* The image are tested and built using Docker version 1.5.0-dev, build fc0329b and Docker version 1.6.0, build bdbc177 on CentOS 7.1.
-
-* [ClusterControl known issues and limitations](http://severalnines.com/docs/troubleshooting.html#known-issues-and-limitations).
+4) To scale up, just run new containers and ClusterControl will add them into the cluster automatically:
+```bash
+# find the ClusterControl container's IP address
+CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
+docker run -d --name galera4 -p 6664:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+docker run -d --name galera5 -p 6665:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
+```
+5) Repeat step #3.
 
 ## Development ##
 
