@@ -61,7 +61,7 @@ check_new_containers_to_scale() {
 		echo "$scale_cluster"
 		echo ""
 
-		nodelist=$(mysql_exec "SELECT distinct(ip) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0")
+		nodelist=$(mysql_exec "SELECT distinct(ip) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0 AND created = 1")
 		trim_nodes=$(echo $nodelist | tr '\n' ' ')
 
                 echo ">> Found a new set of containers awaiting for deployment. Sending scaling command to CMON."
@@ -90,8 +90,8 @@ check_new_cluster_deployment() {
 				all_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				cluster_type=$(mysql_exec "SELECT DISTINCT(cluster_type) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				db_root_password=$(mysql_exec "SELECT DISTINCT(db_root_password) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
-				vendor=$(mysql_exec "SELECT DISTINCT(vendor) FROM $TBLC WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
-				provider_version=$(mysql_exec "SELECT DISTINCT(provider_version) FROM $TBLC WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				vendor=$(mysql_exec "SELECT DISTINCT(vendor) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				provider_version=$(mysql_exec "SELECT DISTINCT(provider_version) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				trim_initial_nodes=$(echo $initial_nodes | tr ' ' ';')
 				trim_all_nodes=$(echo $all_nodes | tr '\n' ' ')
 
