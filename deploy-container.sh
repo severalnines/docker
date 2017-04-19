@@ -86,24 +86,27 @@ check_new_cluster_deployment() {
 			number_nodes=$(mysql_exec "SELECT count(ip) FROM $TBL WHERE cluster_name = '$i'")
 
 			if [ $number_nodes -ge $cluster_size ]; then
-				initial_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 LIMIT $cluster_size")
-				all_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0")
-				cluster_type=$(mysql_exec "SELECT DISTINCT(cluster_type) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0")
-				db_root_password=$(mysql_exec "SELECT DISTINCT(db_root_password) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0")
+				initial_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT $cluster_size")
+				all_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				cluster_type=$(mysql_exec "SELECT DISTINCT(cluster_type) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				db_root_password=$(mysql_exec "SELECT DISTINCT(db_root_password) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				vendor=$(mysql_exec "SELECT DISTINCT(vendor) FROM $TBLC WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				provider_version=$(mysql_exec "SELECT DISTINCT(provider_version) FROM $TBLC WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				trim_initial_nodes=$(echo $initial_nodes | tr ' ' ';')
 				trim_all_nodes=$(echo $all_nodes | tr '\n' ' ')
 
 			        echo ">> Found a new set of containers awaiting for deployment. Sending deployment command to CMON."
         			echo ">> Cluster name         : $i"
 			        echo ">> Cluster type         : $cluster_type"
+				echo ">> Vendor               : $vendor"
+				echo ">> Provider Version     : $provider_version"
 			        echo ">> Nodes discovered     : $trim_all_nodes"
-			        echo ">> DB root password     : $db_root_password"
 				echo ">> Initial cluster size : $cluster_size"
 				echo ">> Nodes to deploy      : $trim_initial_nodes"
 			        echo ""
 
 				# deploy_container 1cluster_name 2cluster_type 3nodes 4db_root_password 5vendor 6provider_version 7os_user
-				deploy_container "$i" "$cluster_type" "${trim_initial_nodes}" "$db_root_password"
+				deploy_container "$i" "$cluster_type" "${trim_initial_nodes}" "$db_root_password" "$vendor" "$provider_version"
 				
 				if [ $DEPLOYED -eq 1 ]; then
 					# set deployed=1 in cmon.containers
