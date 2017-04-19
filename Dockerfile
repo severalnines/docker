@@ -10,9 +10,9 @@ ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonap
 RUN yum clean all
 RUN yum -y install wget && \
 	rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
-	wget www.severalnines.com/downloads/cmon/s9s-repo-nightly.repo -P /etc/yum.repos.d/ && \
+	wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
 	wget http://download.opensuse.org/repositories/home:kedazo/CentOS_6/home:kedazo.repo -P /etc/yum.repos.d/ && \
-	yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm && \
+	yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm && \
 	yum -y install $PACKAGE && \
 	yum clean all
 
@@ -42,6 +42,6 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY deploy-container.sh /deploy-container.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-## cmon 9500, netcat 9999, haproxy-stats 9600
-EXPOSE 22 443 3306 80 9500 9501 9999 9600
+## cmon 9500, netcat 9999
+EXPOSE 22 443 3306 80 9500 9501 9999
 HEALTHCHECK CMD curl -sSf http://localhost/clustercontrol/ > /dev/null || exit 1
