@@ -21,7 +21,16 @@ IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 |
 # check mysql status
 DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
-[ -f $PIDFILE ] && rm -f $PIDFILE
+
+if [ "$(ls -A $DATADIR)" ]; then
+	echo ">> Datadir is not empty"
+	[ -f $PIDFILE ] && rm -f $PIDFILE
+else
+	echo ">> Datadir is empty. Initializing datadir.."
+	mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
+	chown -R mysql:mysql "$DATADIR"
+fi
+
 echo
 echo '>> Checking MySQL daemon..'
 [ -z $(pidof mysqld_safe) ] && service mysql start || (killall -9 mysqld && service mysql start)
@@ -51,7 +60,7 @@ EOF
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
 	sed -i "s|RPCTOKEN|$CMON_TOKEN|g" $CCUI_BOOTSTRAP
 
-	echo 'Generating SSH key..'
+	echo '>> Generating SSH key..'
 	## configure SSH
 	AUTHORIZED_FILE=/root/.ssh/authorized_keys
 	KNOWN_HOSTS=/root/.ssh/known_hosts
@@ -69,19 +78,22 @@ EOF
 	PUB_KEY=$(awk {'print $2'} ${SSH_KEY}.pub)
 	echo "$IP_ADDRESS $KEY_TYPE $PUB_KEY" >> $KNOWN_HOSTS
 	chmod 600 $AUTHORIZED_FILE
-	
-	echo
-	echo '>> Importing CMON data..'
-	mysql -uroot -h127.0.0.1 -e 'create schema cmon; create schema dcps;' && \
-		mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_db.sql && \
-			mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_data.sql && \
-				mysql -f -uroot -h127.0.0.1 dcps < $WWWROOT/clustercontrol/sql/dc-schema.sql
 
-	# configure CMON user & password
-	echo
-	echo '>> Configuring CMON user and MySQL root password..'
-	TMPFILE=/tmp/configure_cmon.sql
-	cat > "$TMPFILE" << EOF
+	mysql=( mysql --protocol=socket -uroot )
+
+	if echo 'SELECT 1' | "${mysql[@]}" &> /dev/null; then
+		echo
+		echo '>> Importing CMON data..'
+		mysql -uroot -h127.0.0.1 -e 'create schema cmon; create schema dcps;' && \
+			mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_db.sql && \
+				mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_data.sql && \
+					mysql -f -uroot -h127.0.0.1 dcps < $WWWROOT/clustercontrol/sql/dc-schema.sql
+
+		# configure CMON user & password
+		echo
+		echo '>> Configuring CMON user and MySQL root password..'
+		TMPFILE=/tmp/configure_cmon.sql
+		cat > "$TMPFILE" << EOF
 UPDATE mysql.user SET Password=PASSWORD('$mysql_root_password') WHERE User='root';
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -95,16 +107,17 @@ CREATE TABLE cmon.containers (id INT PRIMARY KEY AUTO_INCREMENT, did INT, hostna
 FLUSH PRIVILEGES;
 EOF
 
-	mysql -uroot -h127.0.0.1 < $TMPFILE; rm -f $TMPFILE
+		mysql -uroot -h127.0.0.1 < $TMPFILE; rm -f $TMPFILE
 
-	echo
-	echo '>> Configuring CMON MySQL defaults file..'
-	cat > "$MYSQL_CMON_CNF" << EOF
+		echo
+		echo '>> Configuring CMON MySQL defaults file..'
+		cat > "$MYSQL_CMON_CNF" << EOF
 [mysql_cmon]
 user=cmon
 password=$cmon_password
 EOF
 
+	fi
 fi
 
 # Start the services
