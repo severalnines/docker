@@ -44,7 +44,7 @@ if [ ! -e $MYSQL_CMON_CNF ]; then
 	cat /dev/null > $CMON_CONFIG
 	cat > "$CMON_CONFIG" << EOF
 mysql_port=3306
-mysql_hostname=$IP_ADDRESS
+mysql_hostname=127.0.0.1
 mysql_password=$cmon_password
 hostname=$IP_ADDRESS
 rpc_key=$CMON_TOKEN
