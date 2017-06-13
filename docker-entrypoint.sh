@@ -79,7 +79,7 @@ EOF
 	echo "$IP_ADDRESS $KEY_TYPE $PUB_KEY" >> $KNOWN_HOSTS
 	chmod 600 $AUTHORIZED_FILE
 
-	mysql=( mysql --protocol=socket -uroot )
+	mysql=( mysql -uroot -h127.0.0.1 )
 
 	if echo 'SELECT 1' | "${mysql[@]}" &> /dev/null; then
 		echo
