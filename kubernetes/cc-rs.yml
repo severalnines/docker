@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clustercontrol
+  labels:
+    app: clustercontrol
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    nodePort: 30080
+    port: 80
+  - name: https
+    nodePort: 30443
+    port: 443
+  selector:
+    app: clustercontrol
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: clustercontrol
+  labels:
+    app: clustercontrol
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: clustercontrol
+    spec:
+      containers:
+      - name: clustercontrol
+        image: severalnines/clustercontrol
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        - name: cmon-rpc
+          containerPort: 9500
+        - name: cmon-rpc-tls
+          containerPort: 9501
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - -sSf
+            - http://localhost/clustercontrol/
+          initialDelaySeconds: 60
+          periodSeconds: 1
+        volumeMounts:
+        - name: mysql-datadir
+          mountPath: /var/lib/mysql
+        - name: cc-cmond
+          mountPath: /etc/cmon.d
+      volumes:
+      - name: mysql-datadir
+        persistentVolumeClaim:
+          claimName: datadir-cc-nfs-pv1
+      - name: cc-cmond
+        persistentVolumeClaim:
+          claimName: cmond-cc-nfs-pv2
