@@ -5,7 +5,7 @@ set -e
 [ -z "$CMON_PASSWORD" ] && cmon_password='cmon' || cmon_password=$CMON_PASSWORD
 [ -z "$MYSQL_ROOT_PASSWORD" ] && mysql_root_password='password' || mysql_root_password=$MYSQL_ROOT_PASSWORD
 
-CMON_CONFIG=/etc/cmon.cnf
+CMON_CONFIG=/etc/cmon.d/cmon.cnf
 SSH_KEY=/root/.ssh/id_rsa
 MOUNT_SSH_KEY=/mnt/key/id_rsa
 WWWROOT=/var/www/html
@@ -118,6 +118,18 @@ password=$cmon_password
 EOF
 
 	fi
+fi
+
+[ -f $CMON_CONFIG ] && rm -f /etc/cmon.cnf
+
+if [ ! -f $MYSQL_CMON_CNF ]; then
+	echo '>> Configuring CMON MySQL defaults file..'
+	cmon_pwd=$(grep mysql_password $CMON_CONFIG | sed 's|^mysql_password=||g')
+        cat > "$MYSQL_CMON_CNF" << EOF
+[mysql_cmon]
+user=cmon
+password=$cmon_pwd
+EOF
 fi
 
 # Start the services
