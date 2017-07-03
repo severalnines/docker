@@ -38,7 +38,14 @@ add_container() {
 	local hosts=$2
 
 	cid=$(s9s cluster --list -l | grep $cluster_name | awk {'print $1'})
+
 	for host in $hosts; do
+		s9s node --list --long | grep Failed | grep ${host}
+		if [ $? -eq 0 ]; then
+                	echo ">> Removing existing host ${host} from ${cluster_name}"
+	                s9s cluster --remove-node --nodes=${host} --cluster-id=${cid} --wait
+        	fi
+
 		echo ">> Adding $host into $cluster_name"
 		s9s cluster --add-node --nodes=$host --cluster-id=${cid} --wait
 		if [ $? -eq 0 ]; then
