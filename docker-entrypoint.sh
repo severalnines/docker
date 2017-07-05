@@ -132,16 +132,6 @@ password=$cmon_pwd
 EOF
 fi
 
-if [ -f $CMON_CONFIG ]; then
-
-	cmon_token=$(grep rpc_token $CMON_CONFIG | sed 's|^rpc_token=||g')
-	TMPFILE=/tmp/reconfigure_api.sql
-	cat > "$TMPFILE" << EOF
-REPLACE INTO dcps.apis(id, company_id, user_id, url, token) VALUES (1, 1, 1, 'https://127.0.0.1/cmonapi', '$cmon_token');
-EOF
-	mysql -uroot -h127.0.0.1 < $TMPFILE; rm -f $TMPFILE
-fi
-
 # Start the services
 service cmon restart
 service sshd restart
