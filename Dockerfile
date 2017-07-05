@@ -1,4 +1,4 @@
-## ClusterControl 1.4.1 (nightly), Percona Server 5.6, CentOS 6.6 64bit
+## ClusterControl 1.4.2, Percona Server 5.6, CentOS 6.6 64bit
 
 FROM centos:6
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
@@ -35,7 +35,7 @@ RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt &
 	chown -Rf apache.apache /var/www/html/cmonapi/ && \
 	chown -Rf apache.apache /var/www/html/clustercontrol/
 
-VOLUME ["/var/www/html","/var/lib/mysql"]
+VOLUME ["/etc/cmon.d","/var/lib/mysql"]
 
 COPY change_ip.sh /root/change_ip.sh
 COPY docker-entrypoint.sh /entrypoint.sh

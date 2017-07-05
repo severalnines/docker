@@ -132,6 +132,16 @@ password=$cmon_pwd
 EOF
 fi
 
+if [ -f $CMON_CONFIG ]; then
+
+	cmon_token=$(grep rpc_token $CMON_CONFIG | sed 's|^rpc_token=||g')
+	TMPFILE=/tmp/reconfigure_api.sql
+	cat > "$TMPFILE" << EOF
+REPLACE INTO dcps.apis(id, company_id, user_id, url, token) VALUES (1, 1, 1, 'https://127.0.0.1/cmonapi', '$cmon_token');
+EOF
+	mysql -uroot -h127.0.0.1 < $TMPFILE; rm -f $TMPFILE
+fi
+
 # Start the services
 service cmon restart
 service sshd restart
@@ -160,8 +170,23 @@ echo
 echo ">> Starting up the Docker deployment script"
 /deploy-container.sh &
 
+ping_stats() {
+        [[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
+        UUID=$(basename "$(head /proc/1/cgroup)" | sed "s/docker-\(.*\).scope/\\1/")
+        OS=$(cat /proc/version)
+        OS=$(python -c "import sys,urllib; print urllib.quote('${OS}')")
+        MEM=$(free -m | awk '/Mem:/ { print "T:" $2, "F:" $4}')
+        MEM=$(python -c "import sys,urllib; print urllib.quote('${MEM}')")
+        LAST_MSG=$(python -c "import sys,urllib; print urllib.quote('${LAST_MSG}')")
+        CONTAINER=docker
+        wget -T 10 -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null
+
+}
+
 ## generate a README-IMPORTANT! file to notify the generated credentials
 if [ ! -e $BANNER_FILE ]; then
+	ping_stats
+
 	echo "!! Please remember following information which generated during entrypoint !!" > $BANNER_FILE
 	[ -z "$CMON_PASSWORD" ] && echo ">> Generated CMON password: $cmon_password" >> $BANNER_FILE || echo "CMON password: $cmon_password" >> $BANNER_FILE
 	[ -z "$MYSQL_ROOT_PASSWORD" ] &&	echo "Generated MySQL root password: $mysql_root_password" >> $BANNER_FILE || echo "MySQL root password: $mysql_root_password" >> $BANNER_FILE
