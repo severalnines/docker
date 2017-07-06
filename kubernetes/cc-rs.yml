@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: clustercontrol
+  name: clustercontrol-external
   labels:
-    app: clustercontrol
+    app: clustercontrol-external
 spec:
   type: NodePort
   ports:
@@ -13,6 +13,26 @@ spec:
   - name: https
     nodePort: 30443
     port: 443
+  selector:
+    app: clustercontrol
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clustercontrol
+  labels:
+    app: clustercontrol
+spec:
+  type:
+  ports:
+  - name: mysql
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
   selector:
     app: clustercontrol
 ---
@@ -43,6 +63,8 @@ spec:
           containerPort: 9500
         - name: cmon-rpc-tls
           containerPort: 9501
+        - name: cmon-mysql
+          containerPort: 3306
         readinessProbe:
           exec:
             command:
