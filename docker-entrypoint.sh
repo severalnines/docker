@@ -134,6 +134,8 @@ fi
 
 # Start the services
 service cmon restart
+service cmon-ssh restart
+service cmon-events restart
 service sshd restart
 sleep 5
 
