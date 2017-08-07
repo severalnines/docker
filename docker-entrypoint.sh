@@ -22,7 +22,7 @@ IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 |
 DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
 
-if [ "$(ls -A $DATADIR)" ]; then
+if [ "$(ls -A $PIDFILE)" ]; then
 	echo ">> Datadir is not empty"
 	[ -f $PIDFILE ] && rm -f $PIDFILE
 else
