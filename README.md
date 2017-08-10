@@ -2,30 +2,35 @@
 
 ## Table of Contents ##
 
-1. [Overview](#overview)
-2. [Requirements](#requirements)
+1. [Supported Tags](#supported-tags)
+2. [Overview](#overview)
 3. [Image Description](#image-description)
 4. [Run Container](#run-container)
-5. [Optional Docker System Environment](#optional-docker-system-environment)
-6. [Build Image](#build-image)
-7. [Add an Existing Server/Cluster](#add-an-existing-cluster)
-8. [Limitations](#limitations)
-9. [Development](#development)
+5. [Environment Variables](#environment-variables)
+6. [Examples](#examples)
+7. [Development](#development)
+
+## Supported Tags ##
+
+* [1.4.3, devel (1.4.3/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.3/Dockerfile)
+* [1.4.2, latest (1.4.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.2/Dockerfile)
+* [1.4.1 (1.4.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.1/Dockerfile)
+
 
 ## Overview ##
 
-ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to manage and monitor an existing database infrastructure. 
+ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to deploy new set of database servers/clusters or manage existing database servers/clusters. 
 
 Supported database servers/clusters:
 * Galera Cluster for MySQL
 * Percona XtraDB Cluster
 * MariaDB Galera Cluster
-* MySQL replication
+* MySQL Replication
 * MySQL single instance
 * MySQL Cluster (NDB)
-* MongoDB/TokuMX sharded cluster
-* MongoDB/TokuMX replica set
-* PostgreSQL single instance
+* MongoDB sharded cluster
+* MongoDB replica set
+* PostgreSQL (single instance/streaming replication)
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
@@ -36,11 +41,11 @@ To pull ClusterControl images, simply:
 $ docker pull severalnines/clustercontrol
 ```
 
-The image consists of ClusterControl and all of its components:
-* ClusterControl controller, cmonapi, UI and NodeJS packages installed via Severalnines repository.
+The image is based on CentOS 7 which consists of ClusterControl components and requirements:
+* ClusterControl controller, cmonapi, UI, notification and web-ssh packages installed via Severalnines repository.
 * MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
-* An auto-generated SSH key for ClusterControl usage.
+* SSH key for ClusterControl usage.
 
 ## Run Container ##
 
@@ -49,104 +54,53 @@ To run a ClusterControl container, the simplest command would be:
 $ docker run -d severalnines/clustercontrol
 ```
 
-However, we would recommend users to assign a container name and map the host's port with exposed HTTP or HTTPS port on container:
+However, for production use, users are advised to run with sticky IP address/hostname and persistent volumes to survive across restarts, upgrades and rescheduling, as shown below:
+
 ```bash
-$ docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
+# Create a Docker network
+$ docker network create --subnet=192.168.10.0/24 db-cluster
+
+# Start the container
+$ docker run -d --name clustercontrol \
+--network db-cluster \
+--ip 192.168.10.10 \
+-h clustercontrol \
+-p 5000:80 \
+-p 5001:443 \
+-v /storage/clustercontrol/cmon.d:/etc/cmon.d \
+-v /storage/clustercontrol/datadir:/var/lib/mysql \
+-v /storage/clustercontrol/.ssh:/root/.ssh \
+-v /storage/clustercontrol/backups:/backups \
+severalnines/clustercontrol
 ```
 
-Verify with:
-```bash
-$ docker logs -f clustercontrol
-$ docker ps # ensure the container is started and running
-```
+The recommended persistent volumes are:
+	- /etc/cmon.d - ClusterControl configuration files.
+	- /var/lib/mysql - MySQL datadir to host `cmon` and `dcps` database.
+	- /root/.ssh - SSH private and public keys.
+	- /backups - Backup repository only if the backup destination is ClusterControl
 
-After a moment, you should able to access the ClusterControl Web UI at http://[host's IP address]:[host's port]/clustercontrol, for example:
-**http://192.168.10.100:5000/clustercontrol**
+After a moment, you should able to access the ClusterControl Web UI at `{host's IP address}:{host's port}`, for example:
+* HTTP: **http://192.168.10.100:5000/clustercontrol**
+* HTTPS: **https://192.168.10.100:5001/clustercontrol**
 
-To access the ClusterControl's console:
-```bash
-$ docker exec -it clustercontrol /bin/bash
-```
+We have built a complement image called `centos-ssh` to simplify database deployment with ClusterControl. It supports automatic deployment (Galera Cluster) or it can also be used as a base image for database containers (all cluster types are supported).
 
-## Optional Docker System Environment ##
+## Environment Variables ## 
 
-* `CMON_PASSWORD`: MySQL password for user 'cmon'. Default to 'cmon'.
-* `MYSQL_ROOT_PASSWORD`: MySQL root password for the ClusterControl container. Default to 'password'.
+* `CMON_PASSWORD={string}`
+	- MySQL password for user 'cmon'. Default to 'cmon'. Use `docker secret` is recommended.
+	- Example: `CMON_PASSWORD=cmonP4s5`
 
-Use -e flag to specify the environment variable, for example:
-```bash
-$ docker run -d --name clustercontrol -e CMON_PASSWORD=MyCM0nP4ss -e MYSQL_ROOT_PASSWORD=MyR00tP4ss severalnines/clustercontrol:nightly
-```
-
-* -p : Map the exposed port from host to the container. By default following ports are exposed on the container:
-	* 22 - SSH
-	* 80 - HTTP
-	* 443 - HTTPS
-	* 3306 - MySQL
-	* 9500 - cmon RPC
-	* 9600 - HAproxy stats (if HAproxy is installed in this container)
-	* 9999 - netcat (backup streaming)
-
-Use -p flag to map ports between host and container, for example to map HTTP and HTTPS of ClusterControl UI, simply run the container with:
-```bash
-$ docker run -d --name clustercontrol -p 5000:80 -p 5443:443 severalnines/clustercontrol
-```
-
-## Build Image ##
-
-To build Docker image, download the Docker related files available at [our Github repository](https://github.com/severalnines/docker) on 'devel' branch:
-```bash
-$ git clone -b devel https://github.com/severalnines/docker
-$ cd docker
-$ docker build --rm -t severalnines/clustercontrol .
-```
-
-Verify with:
-```bash
-$ docker images
-```
-
-## How to Use ##
-
-1) Run the ClusterControl container:
-```bash
-docker run -d --name clustercontrol -p 5000:80 severalnines/clustercontrol
-```
-
-2) Run the DB containers (`CC_HOST` is the ClusterControl container's IP):
-```bash
-# find the ClusterControl container's IP address
-CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
-docker run -d --name galera1 -p 6661:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera2 -p 6662:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera3 -p 6663:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-```
-
-Container linking is also supported (assume the ClusterControl container name is 'clustercontrol'):
-```bash
-docker run -d --name galera1 -p 6661:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera2 -p 6662:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera3 -p 6663:3306 --link clustercontrol:clustercontrol -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-```
-
-In Docker Swarm mode, `centos-ssh` will default to look for 'cc_clustercontrol' as the `CC_HOST`. If you create the ClusterControl container with 'cc_clustercontrol' as the service name, you can skip defining `CC_HOST`.
-
-3) ClusterControl will automatically pick the new containers to deploy. If it finds the number of containers is equal or greater than `INITIAL_CLUSTER_SIZE`, the cluster deployment shall begin. You can verify that with:
-```bash
-docker logs -f clustercontrol
-```
-
-Or, open ClusterControl UI and look under Activity (top menu).
+* `MYSQL_ROOT_PASSWORD={string}`
+	- MySQL root password for the ClusterControl container. Default to 'password'. Use `docker secret` is recommended.
+	- Example: `MYSQL_ROOT_PASSWORD=MyPassW0rd`
 
 
-4) To scale up, just run new containers and ClusterControl will add them into the cluster automatically:
-```bash
-# find the ClusterControl container's IP address
-CC_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' clustercontrol)
-docker run -d --name galera4 -p 6664:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-docker run -d --name galera5 -p 6665:3306 -e CC_HOST=${CC_IP} -e CLUSTER_TYPE=galera -e CLUSTER_NAME=mygalera -e INITIAL_CLUSTER_SIZE=3 severalnines/centos-ssh
-```
-5) Repeat step #3.
+## Examples ##
+
+* [Standalone Docker](https://github.com/severalnines/docker/tree/master/examples/docker)
+* [Kubernetes](https://github.com/severalnines/docker/tree/master/examples/kubernetes)
 
 ## Development ##
 

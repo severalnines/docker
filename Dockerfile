@@ -1,47 +1,47 @@
-## ClusterControl 1.4.2, Percona Server 5.6, CentOS 6.6 64bit
+## ClusterControl 1.4.2, Percona Server 5.6, CentOS 7 64bit
 
-FROM centos:6
+FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute
 
 # install packages
 RUN yum clean all
 RUN yum -y install wget && \
-	rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
-	wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
-	wget http://repo.severalnines.com/s9s-tools/CentOS_6/s9s-tools.repo -P /etc/yum.repos.d/ && \
-	yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm && \
-	yum -y install $PACKAGE && \
-	yum clean all
+        rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
+        wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
+        wget http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
+        yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm && \
+        yum -y install $PACKAGE && \
+        easy_install supervisor && \
+        yum clean all
 
-## configure MySQL
-ADD my.cnf /etc/my.cnf
+## add configuration files
+ADD conf/my.cnf /etc/my.cnf
+ADD conf/supervisord.conf /etc/supervisord.conf
+ADD conf/s9s.conf /etc/httpd/conf.d/s9s.conf
+ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
 
 ## post-installation: setting up Apache
 RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
-	cp -f /var/www/html/cmonapi/ssl/server.key /etc/pki/tls/private/s9server.key && \
-	rm -rf /var/www/html/cmonapi/ssl && \
-	sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf/httpd.conf && \
-	sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf.d/ssl.conf && \
-	sed -i 's|^SSLCertificateFile.*|SSLCertificateFile /etc/pki/tls/certs/s9server.crt|g' /etc/httpd/conf.d/ssl.conf && \
-	sed -i 's|^SSLCertificateKeyFile.*|SSLCertificateKeyFile /etc/pki/tls/private/s9server.key|g' /etc/httpd/conf.d/ssl.conf && \
-	cp -f /var/www/html/clustercontrol/bootstrap.php.default /var/www/html/clustercontrol/bootstrap.php && \
-	cp -f /var/www/html/cmonapi/config/bootstrap.php.default /var/www/html/cmonapi/config/bootstrap.php && \
-	cp -f /var/www/html/cmonapi/config/database.php.default /var/www/html/cmonapi/config/database.php && \
-	chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
-	chmod -R 777 /var/www/html/clustercontrol/app/upload && \
-	chown -Rf apache.apache /var/www/html/cmonapi/ && \
-	chown -Rf apache.apache /var/www/html/clustercontrol/
+        cp -f /var/www/html/cmonapi/ssl/server.key /etc/pki/tls/private/s9server.key && \
+        sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf/httpd.conf && \
+        cp -f /var/www/html/clustercontrol/bootstrap.php.default /var/www/html/clustercontrol/bootstrap.php && \
+        cp -f /var/www/html/cmonapi/config/bootstrap.php.default /var/www/html/cmonapi/config/bootstrap.php && \
+        cp -f /var/www/html/cmonapi/config/database.php.default /var/www/html/cmonapi/config/database.php && \
+        chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
+        chmod -R 777 /var/www/html/clustercontrol/app/upload && \
+        chown -Rf apache.apache /var/www/html/cmonapi/ && \
+        chown -Rf apache.apache /var/www/html/clustercontrol/
 
-VOLUME ["/etc/cmon.d","/var/lib/mysql"]
+VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh"]
 
 COPY change_ip.sh /root/change_ip.sh
-COPY docker-entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 COPY deploy-container.sh /deploy-container.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-## cmon 9500, netcat 9999
-EXPOSE 22 443 3306 80 9500 9501 9999
+## cmon 9500, cmon-tls 9501, cmon-events 9510, cmon-ssh 9511, netcat 9999
+EXPOSE 22 443 3306 80 9500 9501 9510 9511 9999
 HEALTHCHECK CMD curl -sSf http://localhost/clustercontrol/ > /dev/null || exit 1
