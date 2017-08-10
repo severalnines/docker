@@ -33,7 +33,8 @@ RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt &
         chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
         chmod -R 777 /var/www/html/clustercontrol/app/upload && \
         chown -Rf apache.apache /var/www/html/cmonapi/ && \
-        chown -Rf apache.apache /var/www/html/clustercontrol/
+        chown -Rf apache.apache /var/www/html/clustercontrol/ && \
+	mkdir /backups
 
 VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh"]
 
