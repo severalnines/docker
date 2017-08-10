@@ -75,10 +75,10 @@ severalnines/clustercontrol
 ```
 
 The recommended persistent volumes are:
-	- /etc/cmon.d - ClusterControl configuration files.
-	- /var/lib/mysql - MySQL datadir to host `cmon` and `dcps` database.
-	- /root/.ssh - SSH private and public keys.
-	- /backups - Backup repository only if the backup destination is ClusterControl
+* `/etc/cmon.d` - ClusterControl configuration files.
+* `/var/lib/mysql` - MySQL datadir to host `cmon` and `dcps` database.
+* `/root/.ssh` - SSH private and public keys.
+* `/backups` - Backup repository only if the backup destination is ClusterControl
 
 After a moment, you should able to access the ClusterControl Web UI at `{host's IP address}:{host's port}`, for example:
 * HTTP: **http://192.168.10.100:5000/clustercontrol**
