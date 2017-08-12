@@ -253,7 +253,7 @@ EOF
 	echo "To access ClusterControl UI, go to http://${IP_ADDRESS}/clustercontrol" >> $BANNER_FILE
 fi
 
-if [ ! $(grep dba /etc/passwd > /dev/null) ]; then
+if ! $(grep -q dba /etc/passwd); then
 	## Setting up ssh daemon
 	echo
 	echo '>> Preparing SSH daemon'
