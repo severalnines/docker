@@ -4,7 +4,7 @@ FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat
 
 # install packages
 RUN yum clean all
@@ -34,7 +34,7 @@ RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt &
         chmod -R 777 /var/www/html/clustercontrol/app/upload && \
         chown -Rf apache.apache /var/www/html/cmonapi/ && \
         chown -Rf apache.apache /var/www/html/clustercontrol/ && \
-	mkdir /backups
+	mkdir /root/backups
 
 VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh"]
 
