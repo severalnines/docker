@@ -82,7 +82,7 @@ spec:
           mountPath: /var/lib/mysql
         - name: cc-cmond
           mountPath: /etc/cmon.d
-	- name: cc-ssh
+        - name: cc-ssh
           mountPath: /root/.ssh
         - name: db-backups
           mountPath: /backups
@@ -97,5 +97,5 @@ spec:
         persistentVolumeClaim:
           claimName: ssh-cc-nfs-pv3
       - name: db-backups
-        persistenVolumeClaim:
+        persistentVolumeClaim:
           claimName: backups-cc-nfs-pv4
