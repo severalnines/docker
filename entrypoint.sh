@@ -61,7 +61,7 @@ stop_mysqld() {
 	sleep 3
 }
 
-if [ -z $(pidof mysqld)]; then
+if [ -z $(pidof mysqld) ]; then
 	start_mysqld
 else
 	killall -9 mysqld
