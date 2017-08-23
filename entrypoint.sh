@@ -269,7 +269,7 @@ if ! $(grep -q dba /etc/passwd); then
 
         echo '>> Generating key for s9s cli'
         [ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
-        /usr/bin/s9s user --create --generate-key --controller="https://localhost:9501" --cmon-user=dba
+        /usr/bin/s9s user --create --generate-key --controller=https://localhost:9501 --cmon-user=dba
         S9S_CONF=/root/.s9s/s9s.conf
         if [ -f $S9S_CONF ]; then
                 echo '>> Configuring s9s.conf'
@@ -279,7 +279,7 @@ if ! $(grep -q dba /etc/passwd); then
         fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
-		echo "define('CONTAINER', 'docker');" >> CCUI_BOOTSTRAP
+		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
 	fi
 fi
 
