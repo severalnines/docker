@@ -149,9 +149,9 @@ if [ $INITIALIZED -eq 1 ]; then
 
 		echo
 		echo '>> Updating database credentials..'
-		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$CMON_EXISTING_PASS');|g" $CCUI_BOOTSTRAP
+		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${CMON_EXISTING_PASS} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CCUI_BOOTSTRAP
 		sed -i "s|^define('DB_PORT'.*|define('DB_PORT', '$CMON_EXISTING_PORT');|g" $CCUI_BOOTSTRAP
-		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$CMON_EXISTING_PASS');|g" $CMONAPI_DATABASE
+		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${CMON_EXISTING_PASS} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CMONAPI_DATABASE
 		sed -i "s|^define('DB_PORT'.*|define('DB_PORT', '$CMON_EXISTING_PORT');|g" $CMONAPI_DATABASE
 
 		echo
@@ -193,9 +193,9 @@ EOF
 	echo '>> Setting up ClusterControl UI and CMONAPI..'
 	sed -i "s|GENERATED_CMON_TOKEN|$CMON_TOKEN|g" $CMONAPI_BOOTSTRAP
 	sed -i "s|^define('ENABLE_CC_API_TOKEN_CHECK'.*|define('ENABLE_CC_API_TOKEN_CHECK', '1');|g" $CMONAPI_BOOTSTRAP
-	sed -i "s|MYSQL_PASSWORD|$cmon_password|g" $CMONAPI_DATABASE
+        sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CMONAPI_DATABASE
 	sed -i "s|MYSQL_PORT|3306|g" $CMONAPI_DATABASE
-	sed -i "s|DBPASS|$cmon_password|g" $CCUI_BOOTSTRAP
+	sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CCUI_BOOTSTRAP
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
 	sed -i "s|RPCTOKEN|$CMON_TOKEN|g" $CCUI_BOOTSTRAP
 
@@ -263,41 +263,41 @@ if ! $(grep -q dba /etc/passwd); then
 
 	## Configure s9s CLI
 
-  echo
-  echo '>> Starting CMON to grant s9s cli user..'
-  /usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
-  sleep 5
+	echo
+	echo '>> Starting CMON to grant s9s cli user..'
+	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
+	sleep 5
 
-  echo '>> Creating user "dba" for s9s cli'
-  /usr/sbin/useradd dba
+	echo '>> Creating user "dba" for s9s cli'
+	/usr/sbin/useradd dba
 
-  echo '>> Generating key for s9s cli'
-  [ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
-  /usr/bin/s9s user --create --generate-key --controller=https://localhost:9501 --cmon-user=dba
+	echo '>> Generating key for s9s cli'
+	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
+	/usr/bin/s9s user --create --generate-key --controller=https://localhost:9501 --cmon-user=dba
 
-  S9S_CONF=/root/.s9s/s9s.conf
-  if [ -f $S9S_CONF ]; then
-          echo '>> Configuring s9s.conf'
-          echo 'controller_host_name = localhost' >> $S9S_CONF
-          echo 'controller_port      = 9501' >> $S9S_CONF
-          echo 'rpc_tls              = true' >> $S9S_CONF
-  fi
+	S9S_CONF=/root/.s9s/s9s.conf
+	if [ -f $S9S_CONF ]; then
+		echo '>> Configuring s9s.conf'
+		echo 'controller_host_name = localhost' >> $S9S_CONF
+		echo 'controller_port      = 9501' >> $S9S_CONF
+		echo 'rpc_tls              = true' >> $S9S_CONF
+	fi
 
-  echo
-  kill -15 $(pidof cmon)
-  while ($pidof cmon); do
-          echo '>> Stopping CMON..'
-          sleep 1
-  done
-  echo '>> CMON stopped'
+	echo
+	kill -15 $(pidof cmon)
+	while ($pidof cmon); do
+		echo '>> Stopping CMON..'
+		sleep 1
+	done
+	echo '>> CMON stopped'
 
-  if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
-    echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
-  fi
+	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
+		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
+	fi
 fi
 
 stop_mysqld
-echo '>> Sleeping 15s for stopping processes to clean up..'
+echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
 
 echo ""
