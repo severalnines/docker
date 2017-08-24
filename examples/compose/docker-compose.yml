@@ -1,0 +1,21 @@
+version: "2"
+
+services:
+  clustercontrol:
+    image: severalnines/clustercontrol
+    ports:
+      - "5000:80"
+    environment:
+      CMON_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
+      MYSQL_ROOT_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
+    volumes:
+      - cc-cmond:/etc/cmon.d
+      - cc-datadir:/var/lib/mysql
+      - cc-ssh:/root/.ssh
+      - cc-backups:/root/backups
+
+volumes:
+  cc-cmond:
+  cc-datadir:
+  cc-ssh:
+  cc-backups:
