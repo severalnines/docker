@@ -43,8 +43,10 @@ if [ "$(ls -A $DATADIR)" ]; then
 else
 	echo ">> Datadir is empty. Initializing datadir.."
 	mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
-	chown -R mysql:mysql "$DATADIR"
 fi
+
+echo ">> Ensure MySQL datadir has correct permission/ownership.."
+chown -R mysql:mysql "$DATADIR"
 
 echo
 echo '>> Starting MySQL daemon..'
@@ -299,6 +301,7 @@ fi
 stop_mysqld
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
+[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
 
 echo ""
 echo ">> Starting Supervisord and all related services:"
