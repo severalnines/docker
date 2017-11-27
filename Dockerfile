@@ -1,10 +1,10 @@
-## ClusterControl 1.4.2.2179, Percona Server 5.6, CentOS 7 64bit
+## ClusterControl 1.5.0.2230, Percona Server 5.6, CentOS 7 64bit
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-cmonapi clustercontrol-controller clustercontrol-notifications clustercontrol-ssh clustercontrol-cloud clustercontrol-clud Percona-Server-server-56 percona-xtrabackup-22 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat
 
 # install packages
 RUN yum clean all
