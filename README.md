@@ -13,8 +13,8 @@
 
 ## Supported Tags ##
 
-* [1.4.3, devel (1.4.3/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.3/Dockerfile)
-* [1.4.2, latest (1.4.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.2/Dockerfile)
+* [1.5, latest (1.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.5/Dockerfile)
+* [1.4.2 (1.4.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.2/Dockerfile)
 * [1.4.1 (1.4.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.1/Dockerfile)
 
 
