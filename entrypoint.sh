@@ -266,20 +266,19 @@ if ! $(grep -q dba /etc/passwd); then
 	## Configure s9s CLI
 
 	echo
-	echo '>> Starting CMON to grant s9s cli user..'
+	echo '>> Starting CMON to grant s9s CLI user..'
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
 	sleep 5
+	cmon_user=root
 
-	echo '>> Creating user "dba" for s9s cli'
-	/usr/sbin/useradd dba
-
-	echo '>> Generating key for s9s cli'
+	echo '>> Generating key for s9s CLI'
 	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
-	/usr/bin/s9s user --create --generate-key --controller=https://localhost:9501 --cmon-user=dba
+	/usr/bin/s9s user --create --generate-key --group=admins --controller=https://localhost:9501 $cmon_user
 
 	S9S_CONF=/root/.s9s/s9s.conf
 	if [ -f $S9S_CONF ]; then
 		echo '>> Configuring s9s.conf'
+		echo "cmon_user            = $cmon_user" >> $S9S_CONF
 		echo 'controller_host_name = localhost' >> $S9S_CONF
 		echo 'controller_port      = 9501' >> $S9S_CONF
 		echo 'rpc_tls              = true' >> $S9S_CONF
