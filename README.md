@@ -13,7 +13,8 @@
 
 ## Supported Tags ##
 
-* [1.5, latest (1.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.5/Dockerfile)
+* [1.5.1, latest (1.5.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.5.1/Dockerfile)
+* [1.5 (1.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.5/Dockerfile)
 * [1.4.2 (1.4.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.2/Dockerfile)
 * [1.4.1 (1.4.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.4.1/Dockerfile)
 
@@ -107,6 +108,7 @@ Starting from version 1.4.2, ClusterControl requires a number of processes to be
 * cmon - ClusterControl backend daemon. The brain of ClusterControl. It depends on `mysqld` and `sshd`.
 * cmon-ssh - ClusterControl web-based SSH daemon, which depends on `cmon` and `httpd`.
 * cmon-events - ClusterControl notitifactions daemon, which depends on `cmon` and `httpd`.
+* cmon-cloud - ClusterControl Cloud integration daemon, which depends on `cmon` and `httpd`.
 * cc-auto-deployment - ClusterControl automatic deployment script, running as a background process, which depends on `cmon`.
 
 These processes are being controlled by Supervisord, a process control system. To manage a process, one would use `supervisorctl` client as shown in the following example:
