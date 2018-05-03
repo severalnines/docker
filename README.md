@@ -71,7 +71,8 @@ $ docker run -d --name clustercontrol \
 -p 5001:443 \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
--v /storage/clustercontrol/.ssh:/root/.ssh \
+-v /storage/clustercontrol/sshkey:/root/.ssh \
+-v /storage/clustercontrol/cmonlib:/var/lib/cmon \
 -v /storage/clustercontrol/backups:/root/backups \
 severalnines/clustercontrol
 ```
@@ -80,6 +81,7 @@ The recommended persistent volumes are:
 * `/etc/cmon.d` - ClusterControl configuration files.
 * `/var/lib/mysql` - MySQL datadir to host `cmon` and `dcps` database.
 * `/root/.ssh` - SSH private and public keys.
+* `/var/lib/cmon` - ClusterControl internal files.
 * `/root/backups` - Default backup directory only if ClusterControl is the backup destination
 
 After a moment, you should able to access the ClusterControl Web UI at `{host's IP address}:{host's port}`, for example:
@@ -107,8 +109,8 @@ Starting from version 1.4.2, ClusterControl requires a number of processes to be
 * httpd - Web server running on Apache 2.4.
 * cmon - ClusterControl backend daemon. The brain of ClusterControl. It depends on `mysqld` and `sshd`.
 * cmon-ssh - ClusterControl web-based SSH daemon, which depends on `cmon` and `httpd`.
-* cmon-events - ClusterControl notitifactions daemon, which depends on `cmon` and `httpd`.
-* cmon-cloud - ClusterControl Cloud integration daemon, which depends on `cmon` and `httpd`.
+* cmon-events - ClusterControl notifications daemon, which depends on `cmon` and `httpd`.
+* cmon-cloud - ClusterControl cloud integration daemon, which depends on `cmon` and `httpd`.
 * cc-auto-deployment - ClusterControl automatic deployment script, running as a background process, which depends on `cmon`.
 
 These processes are being controlled by Supervisord, a process control system. To manage a process, one would use `supervisorctl` client as shown in the following example:
