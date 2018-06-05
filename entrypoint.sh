@@ -17,6 +17,7 @@ BANNER_FILE='/root/README_IMPORTANT'
 MYSQL_CMON_CNF=/etc/my_cmon.cnf
 IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 | head -1)
 [ -z $IP_ADDRESS ] && IP_ADDRESS=$(hostname -i | awk {'print $1'} | tr -d ' ')
+HOSTNAME=$(hostname)
 DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
 
@@ -184,9 +185,9 @@ else
 	cat /dev/null > $CMON_CONFIG
 	cat > "$CMON_CONFIG" << EOF
 mysql_port=3306
-mysql_hostname=127.0.0.1
+mysql_hostname=localhost
 mysql_password=$cmon_password
-hostname=$IP_ADDRESS
+hostname=$HOSTNAME
 rpc_key=$CMON_TOKEN
 EOF
 	## Configure ClusterControl UI & CMONAPI
@@ -195,8 +196,10 @@ EOF
 	echo '>> Setting up ClusterControl UI and CMONAPI..'
 	sed -i "s|GENERATED_CMON_TOKEN|$CMON_TOKEN|g" $CMONAPI_BOOTSTRAP
 	sed -i "s|^define('ENABLE_CC_API_TOKEN_CHECK'.*|define('ENABLE_CC_API_TOKEN_CHECK', '1');|g" $CMONAPI_BOOTSTRAP
+	sed -i "s|^define('DB_HOST'.*|define('DB_HOST', 'localhost');|g" $CMONAPI_DATABASE
         sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CMONAPI_DATABASE
 	sed -i "s|MYSQL_PORT|3306|g" $CMONAPI_DATABASE
+	sed -i "s|^define('DB_HOST'.*|define('DB_HOST', 'localhost');|g" $CCUI_BOOTSTRAP
 	sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CCUI_BOOTSTRAP
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
 	sed -i "s|RPCTOKEN|$CMON_TOKEN|g" $CCUI_BOOTSTRAP
@@ -225,6 +228,7 @@ DROP DATABASE IF EXISTS test; DELETE FROM mysql.db WHERE DB='test' OR DB='test\\
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'localhost' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'127.0.0.1' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'$IP_ADDRESS' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'$HOSTNAME' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'%' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 REPLACE INTO dcps.apis(id, company_id, user_id, url, token) VALUES (1, 1, 1, 'https://127.0.0.1/cmonapi', '$CMON_TOKEN');
 CREATE TABLE cmon.containers (id INT PRIMARY KEY AUTO_INCREMENT, did INT, hostname VARCHAR(255), ip VARCHAR(128), cluster_type VARCHAR(128), cluster_name VARCHAR(255), vendor VARCHAR(128), provider_version VARCHAR(16), db_root_password VARCHAR(255), initial_size INT, deploying TINYINT NOT NULL DEFAULT 0, deployed TINYINT NOT NULL DEFAULT 0, created TINYINT NOT NULL DEFAULT 0);
@@ -255,7 +259,7 @@ EOF
 	echo "To access ClusterControl UI, go to http://${IP_ADDRESS}/clustercontrol" >> $BANNER_FILE
 fi
 
-if ! $(grep -q dba /etc/passwd); then
+if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	## Setting up ssh daemon
 	echo
 	echo '>> Preparing SSH daemon'
@@ -268,13 +272,12 @@ if ! $(grep -q dba /etc/passwd); then
 	echo
 	echo '>> Starting CMON to grant s9s CLI user..'
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
-	sleep 5
-	cmon_user=root
+	sleep 3
+	cmon_user=dba
 
 	echo '>> Generating key for s9s CLI'
 	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
 	/usr/bin/s9s user --create --generate-key --group=admins --controller=https://localhost:9501 $cmon_user
-
 	S9S_CONF=/root/.s9s/s9s.conf
 	if [ -f $S9S_CONF ]; then
 		echo '>> Configuring s9s.conf'
@@ -298,6 +301,7 @@ if ! $(grep -q dba /etc/passwd); then
 fi
 
 stop_mysqld
+[ -e /run/httpd/httpd.pid ] && rm -f /run/httpd/httpd.pid
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
 [ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid

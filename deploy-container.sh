@@ -30,7 +30,7 @@ set_container_status() {
 	local cluster_name=$3
 	local host=$4
 
-	mysql_exec "UPDATE $TBL SET $flag = $flag_value WHERE ip = '$host' and cluster_name = '$cluster_name'"
+	mysql_exec "UPDATE $TBL SET $flag = $flag_value WHERE hostname = '$host' and cluster_name = '$cluster_name'"
 }
 
 add_container() {
@@ -68,7 +68,7 @@ check_new_containers_to_scale() {
 		echo "$scale_cluster"
 		echo ""
 
-		nodelist=$(mysql_exec "SELECT distinct(ip) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0 AND created = 1")
+		nodelist=$(mysql_exec "SELECT distinct(hostname) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0 AND created = 1")
 		trim_nodes=$(echo $nodelist | tr '\n' ' ')
 
                 echo ">> Found a new set of containers awaiting for deployment. Sending scaling command to CMON."
@@ -90,11 +90,11 @@ check_new_cluster_deployment() {
 
 		for i in $new_cluster; do
 			cluster_size=$(mysql_exec "SELECT initial_size FROM $TBL GROUP BY cluster_name HAVING cluster_name='$i'")
-			number_nodes=$(mysql_exec "SELECT count(ip) FROM $TBL WHERE cluster_name = '$i'")
+			number_nodes=$(mysql_exec "SELECT count(hostname) FROM $TBL WHERE cluster_name = '$i'")
 
 			if [ $number_nodes -ge $cluster_size ]; then
-				initial_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT $cluster_size")
-				all_nodes=$(mysql_exec "SELECT DISTINCT(ip) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				initial_nodes=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT $cluster_size")
+				all_nodes=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				cluster_type=$(mysql_exec "SELECT DISTINCT(cluster_type) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				db_root_password=$(mysql_exec "SELECT DISTINCT(db_root_password) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				vendor=$(mysql_exec "SELECT DISTINCT(vendor) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")

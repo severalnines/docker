@@ -1,7 +1,7 @@
 # Example Deployment on Kubernetes #
 
 We have covered this in the following blog post:
-* [MySQL on Docker: Running Galera Cluster in Production with ClusterControl on Kubernetes](https://severalnines.com/blog/mysql-docker-running-galera-cluster-production-clustercontrol-kubernetes)
+* [MySQL on Docker: Running Galera Cluster with ClusterControl on Kubernetes](https://severalnines.com/blog/mysql-docker-running-galera-cluster-clustercontrol-kubernetes)
 
 Description on the definition files:
 
@@ -13,9 +13,9 @@ Description on the definition files:
 **Galera Cluster**
 
 * cc-galera-pv-pvc.yml - Create PersistentVolume and PersistentVolumeClaim for Galera nodes
-* cc-galera-rs.yml - Deploy 3-node Galera Cluster in ReplicaSet mode
-* cc-galera-ss.yml - Deploy 3-node Galera Cluster in StatefulSet mode
+* cc-galera-rs.yml - Deploy a 3-node Galera Cluster in ReplicaSet mode
+* cc-galera-ss.yml - Deploy a 3-node Galera Cluster in StatefulSet mode
 
 **HAProxy (load balancer)**
 
-* cc-haproxy-rs.yml - Deploy 2 HAproxy in ReplicaSet mode
+* cc-haproxy-rs.yml - Deploy 2 HAproxy pods in ReplicaSet mode
