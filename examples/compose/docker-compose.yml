@@ -12,10 +12,12 @@ services:
       - cc-cmond:/etc/cmon.d
       - cc-datadir:/var/lib/mysql
       - cc-ssh:/root/.ssh
+      - cc-cmonlib:/var/lib/cmon
       - cc-backups:/root/backups
 
 volumes:
   cc-cmond:
   cc-datadir:
   cc-ssh:
+  cc-cmonlib:
   cc-backups:

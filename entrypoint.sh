@@ -259,7 +259,7 @@ EOF
 	echo "To access ClusterControl UI, go to http://${IP_ADDRESS}/clustercontrol" >> $BANNER_FILE
 fi
 
-if ! $(grep -q dba /etc/passwd); then
+if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	## Setting up ssh daemon
 	echo
 	echo '>> Preparing SSH daemon'
@@ -272,7 +272,8 @@ if ! $(grep -q dba /etc/passwd); then
 	echo
 	echo '>> Starting CMON to grant s9s CLI user..'
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
-	cmon_user=root
+	sleep 3
+	cmon_user=dba
 
 	echo '>> Generating key for s9s CLI'
 	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
@@ -300,6 +301,7 @@ if ! $(grep -q dba /etc/passwd); then
 fi
 
 stop_mysqld
+[ -e /run/httpd/httpd.pid ] && rm -f /run/httpd/httpd.pid
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
 [ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
