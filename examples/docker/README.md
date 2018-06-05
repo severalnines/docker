@@ -1,4 +1,4 @@
-# Example Deployment on Standalone Docker#
+# Example Deployment on Standalone Docker #
 
 ## Manual Deployment ##
 
