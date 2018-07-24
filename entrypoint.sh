@@ -20,6 +20,7 @@ IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 |
 HOSTNAME=$(hostname)
 DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
+MYSQL_INITIALIZE=0
 
 ping_stats() {
         [[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
@@ -37,13 +38,24 @@ ping_stats() {
 ## Check whether initializing MySQL data directory is necessary.
 ## /var/lib/mysql on new volume is usually empty.
 
-echo
 if [ "$(ls -A $DATADIR)" ]; then
 	echo ">> Datadir is not empty.."
-	[ -f $PIDFILE ] && rm -f $PIDFILE
+	echo ">> Checking for lost+found existance"
+	## Check if lost+found directory exists alone
+
+	if [ -e ${DATADIR}/lost+found ] && [ $(ls -A ${DATADIR} | wc -l) -eq 1 ]; then
+		echo ">> Found 'lost+found' directory alone. Proceed to initialize MySQL anyway.."
+		MYSQL_INITIALIZE=1
+	else
+		[ -f $PIDFILE ] && rm -f $PIDFILE
+	fi
 else
-	echo ">> Datadir is empty. Initializing datadir.."
-	mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
+	MYSQL_INITIALIZE=1
+fi
+
+if [ $MYSQL_INITIALIZE -eq 1 ]; then
+        echo ">> Datadir is empty. Initializing datadir.."
+        mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
 fi
 
 echo ">> Ensure MySQL datadir has correct permission/ownership.."
