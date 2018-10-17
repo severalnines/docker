@@ -20,6 +20,7 @@ IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 |
 HOSTNAME=$(hostname)
 DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
+SOCKETFILE=${DATADIR}/mysql.sock
 MYSQL_INITIALIZE=0
 
 ping_stats() {
@@ -48,6 +49,7 @@ if [ "$(ls -A $DATADIR)" ]; then
 		MYSQL_INITIALIZE=1
 	else
 		[ -f $PIDFILE ] && rm -f $PIDFILE
+		[ -f $SOCKETFILE ] && rm -f $SOCKETFILE
 	fi
 else
 	MYSQL_INITIALIZE=1
@@ -64,9 +66,10 @@ chown -R mysql:mysql "$DATADIR"
 echo
 echo '>> Starting MySQL daemon..'
 [ -f $PIDFILE ] && rm -f $PIDFILE
+[ -f $SOCKETFILE ] && rm -f $SOCKETFILE
 
 start_mysqld() {
-	/usr/bin/mysqld_safe --plugin-dir=/usr/lib64/mysql/plugin --socket=mysql.sock &
+	/usr/bin/mysqld_safe --plugin-dir=/usr/lib64/mysql/plugin --socket=${SOCKETFILE} &
 }
 
 stop_mysqld() {
@@ -140,6 +143,10 @@ generate_ssh_key() {
 }
 
 if [ $INITIALIZED -eq 1 ]; then
+
+	## Bootstrap ClsuterControl
+
+	sleep 5
 	[ ! -f $MYSQL_CMON_CNF ] && create_mysql_cmon_cnf
 	cmon_token=$(mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -Bse "SELECT token FROM dcps.apis" 2> /dev/null)
 	echo
@@ -273,6 +280,7 @@ fi
 
 if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	## Setting up ssh daemon
+
 	echo
 	echo '>> Preparing SSH daemon'
 	[ -d /var/run/sshd ] ||  mkdir /var/run/sshd
@@ -312,11 +320,16 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	fi
 fi
 
+# Clean up
+
 stop_mysqld
+[ -e /etc/s9s.conf ] && rm -Rf /etc/s9s.conf
 [ -e /run/httpd/httpd.pid ] && rm -f /run/httpd/httpd.pid
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
 [ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
+
+# Start everything
 
 echo ""
 echo ">> Starting Supervisord and all related services:"

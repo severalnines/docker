@@ -1,4 +1,4 @@
-## ClusterControl 1.6.2-2726, Percona Server 5.6, CentOS 7 64bit
+## ClusterControl 1.7.0-2798, Percona Server 5.6, CentOS 7 64bit
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
@@ -12,7 +12,7 @@ RUN yum -y install wget && \
         rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
         wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
         wget http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
-        yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm && \
+        yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm && \
         yum -y install $PACKAGE && \
         easy_install supervisor && \
         yum clean all
@@ -22,6 +22,7 @@ ADD conf/my.cnf /etc/my.cnf
 ADD conf/supervisord.conf /etc/supervisord.conf
 ADD conf/s9s.conf /etc/httpd/conf.d/s9s.conf
 ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
+ADD conf/cmon.default /etc/default/cmon
 
 ## post-installation: setting up Apache
 RUN cp -f /var/www/html/cmonapi/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \

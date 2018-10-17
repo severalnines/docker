@@ -41,7 +41,7 @@ docker run -d --name=clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
 -h clustercontrol \
--v /storage/clustercontrol/.ssh:/root/.ssh \
+-v /storage/clustercontrol/sshkey:/root/.ssh \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/backups:/backups \
@@ -138,7 +138,7 @@ docker run -d --name=clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
 -h clustercontrol \
--v /storage/clustercontrol/.ssh:/root/.ssh \
+-v /storage/clustercontrol/sshkey:/root/.ssh \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/backups:/backups \

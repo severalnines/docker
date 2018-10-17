@@ -69,6 +69,8 @@ spec:
           containerPort: 9511
         - name: cmon-mysql
           containerPort: 3306
+        - name: cmon-cloud
+          containerPort: 9518
         readinessProbe:
           exec:
             command:
