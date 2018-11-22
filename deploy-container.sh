@@ -30,7 +30,21 @@ set_container_status() {
 	local cluster_name=$3
 	local host=$4
 
-	mysql_exec "UPDATE $TBL SET $flag = $flag_value WHERE hostname = '$host' and cluster_name = '$cluster_name'"
+	if [ $hostname_resolve -eq 0 ]; then
+		mysql_exec "UPDATE $TBL SET $flag = $flag_value WHERE ip = '$host' and cluster_name = '$cluster_name'"
+	else
+		mysql_exec "UPDATE $TBL SET $flag = $flag_value WHERE hostname = '$host' and cluster_name = '$cluster_name'"
+	fi
+}
+
+check_hostname_resolve() {
+	local node=$1
+
+	if [ ping -c1 -W1 $node ]; then
+		hostname_resolve=1
+	else
+		hostname_resolve=0
+	fi
 }
 
 add_container() {
@@ -68,7 +82,10 @@ check_new_containers_to_scale() {
 		echo "$scale_cluster"
 		echo ""
 
-		nodelist=$(mysql_exec "SELECT distinct(hostname) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0 AND created = 1")
+		node_hostname=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT 1")
+		check_hostname_resolve ${node_hostname}
+                [ $hostname_resolve -eq 0 ] && column=ip || column=hostname
+		nodelist=$(mysql_exec "SELECT distinct($column) FROM $TBL WHERE cluster_name = '$scale_cluster' AND deployed = 0 AND deploying = 0 AND created = 1")
 		trim_nodes=$(echo $nodelist | tr '\n' ' ')
 
                 echo ">> Found a new set of containers awaiting for deployment. Sending scaling command to CMON."
@@ -93,8 +110,11 @@ check_new_cluster_deployment() {
 			number_nodes=$(mysql_exec "SELECT count(hostname) FROM $TBL WHERE cluster_name = '$i'")
 
 			if [ $number_nodes -ge $cluster_size ]; then
-				initial_nodes=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT $cluster_size")
-				all_nodes=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
+				node_hostname=$(mysql_exec "SELECT DISTINCT(hostname) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT 1")
+				check_hostname_resolve ${node_hostname}
+				[ $hostname_resolve -eq 0 ] && column=ip || column=hostname
+				initial_nodes=$(mysql_exec "SELECT DISTINCT($column) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1 LIMIT $cluster_size")
+				all_nodes=$(mysql_exec "SELECT DISTINCT($column) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				cluster_type=$(mysql_exec "SELECT DISTINCT(cluster_type) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				db_root_password=$(mysql_exec "SELECT DISTINCT(db_root_password) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
 				vendor=$(mysql_exec "SELECT DISTINCT(vendor) FROM $TBL WHERE cluster_name = '$i' AND deployed = 0 AND deploying = 0 AND created = 1")
