@@ -13,6 +13,7 @@ PUB_KEY_DIR=$WWWROOT/keys
 CMONAPI_BOOTSTRAP=$WWWROOT/cmonapi/config/bootstrap.php
 CMONAPI_DATABASE=$WWWROOT/cmonapi/config/database.php
 CCUI_BOOTSTRAP=$WWWROOT/clustercontrol/bootstrap.php
+CCUI_SQL=$WWWROOT/clustercontrol/sql/dc-schema.sql
 BANNER_FILE='/root/README_IMPORTANT'
 MYSQL_CMON_CNF=/etc/my_cmon.cnf
 IP_ADDRESS=$(ip a | grep eth0 | grep inet | awk {'print $2'} | cut -d '/' -f 1 | head -1)
@@ -185,6 +186,10 @@ if [ $INITIALIZED -eq 1 ]; then
 		else
 			generate_ssh_key
 		fi
+
+		echo
+		echo '>> Updating existing dcps schema'
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -f dcps < $CCUI_SQL 
 
 		echo
 		echo '>> Bootstrapping completed.'
