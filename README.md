@@ -13,7 +13,8 @@
 
 ## Supported Tags ##
 
-* [1.7.0, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.7.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.7.0, (1.7.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.0/Dockerfile)
 * [1.6.2, (1.6.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.6.2/Dockerfile)
 * [1.6.1, (1.6.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.6.1/Dockerfile)
 * [1.6.0, (1.6.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.6.0/Dockerfile)
