@@ -45,7 +45,7 @@ $ docker pull severalnines/clustercontrol
 ```
 
 The image is based on CentOS 7 with Apache 2.4, which consists of ClusterControl packages and prerequisite components:
-* ClusterControl controller, cmonapi, UI, notification and web-ssh packages installed via Severalnines repository.
+* ClusterControl controller, cmonapi, UI, cloud, notification and web-ssh packages installed via Severalnines repository.
 * MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * SSH key for ClusterControl usage.
