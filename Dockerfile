@@ -12,7 +12,7 @@ RUN yum -y install wget && \
         rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
         wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
         wget http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
-        yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm && \
+	yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm && \
         yum -y install $PACKAGE && \
         easy_install supervisor && \
         yum clean all
