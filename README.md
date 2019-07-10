@@ -13,7 +13,8 @@
 
 ## Supported Tags ##
 
-* [1.7.2, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.7.3, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.7.2 (1.7.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.2/Dockerfile)
 * [1.7.1 (1.7.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.1/Dockerfile)
 * [1.7.0 (1.7.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.0/Dockerfile)
 * [1.6.2 (1.6.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.6.2/Dockerfile)
@@ -46,7 +47,7 @@ $ docker pull severalnines/clustercontrol
 ```
 
 The image is based on CentOS 7 with Apache 2.4, which consists of ClusterControl packages and prerequisite components:
-* ClusterControl controller, cmonapi, UI, cloud, notification and web-ssh packages installed via Severalnines repository.
+* ClusterControl controller, UI, cloud, notification and web-ssh packages installed via Severalnines repository.
 * MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * SSH key for ClusterControl usage.

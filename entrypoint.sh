@@ -10,8 +10,8 @@ SSH_KEY=/root/.ssh/id_rsa
 MOUNT_SSH_KEY=/mnt/key/id_rsa
 WWWROOT=/var/www/html
 PUB_KEY_DIR=$WWWROOT/keys
-CMONAPI_BOOTSTRAP=$WWWROOT/cmonapi/config/bootstrap.php
-CMONAPI_DATABASE=$WWWROOT/cmonapi/config/database.php
+#CMONAPI_BOOTSTRAP=$WWWROOT/cmonapi/config/bootstrap.php
+#CMONAPI_DATABASE=$WWWROOT/cmonapi/config/database.php
 CCUI_BOOTSTRAP=$WWWROOT/clustercontrol/bootstrap.php
 CCUI_SQL=$WWWROOT/clustercontrol/sql/dc-schema.sql
 BANNER_FILE='/root/README_IMPORTANT'
@@ -160,7 +160,6 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo '>> Updating API token..'
 		sed -i "s|^rpc_key=.*|rpc_key=$CMON_EXISTING_TOKEN|g" $CMON_CONFIG
 	        sed -i "s|^define('RPC_TOKEN'.*|define('RPC_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CCUI_BOOTSTRAP
-	        sed -i "s|^define('CMON_TOKEN'.*|define('CMON_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CMONAPI_BOOTSTRAP
 
 		echo
 		echo '>> Retrieving existing cmon credentials..'
@@ -174,8 +173,6 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo '>> Updating database credentials..'
 		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${CMON_EXISTING_PASS} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CCUI_BOOTSTRAP
 		sed -i "s|^define('DB_PORT'.*|define('DB_PORT', '$CMON_EXISTING_PORT');|g" $CCUI_BOOTSTRAP
-		sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${CMON_EXISTING_PASS} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CMONAPI_DATABASE
-		sed -i "s|^define('DB_PORT'.*|define('DB_PORT', '$CMON_EXISTING_PORT');|g" $CMONAPI_DATABASE
 
 		echo
 		echo '>> Setting up public key directory..'
@@ -214,15 +211,10 @@ mysql_password=$cmon_password
 hostname=$HOSTNAME
 rpc_key=$CMON_TOKEN
 EOF
-	## Configure ClusterControl UI & CMONAPI
+	## Configure ClusterControl UI
 
 	echo
-	echo '>> Setting up ClusterControl UI and CMONAPI..'
-	sed -i "s|GENERATED_CMON_TOKEN|$CMON_TOKEN|g" $CMONAPI_BOOTSTRAP
-	sed -i "s|^define('ENABLE_CC_API_TOKEN_CHECK'.*|define('ENABLE_CC_API_TOKEN_CHECK', '1');|g" $CMONAPI_BOOTSTRAP
-	sed -i "s|^define('DB_HOST'.*|define('DB_HOST', 'localhost');|g" $CMONAPI_DATABASE
-        sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CMONAPI_DATABASE
-	sed -i "s|MYSQL_PORT|3306|g" $CMONAPI_DATABASE
+	echo '>> Setting up ClusterControl UI'
 	sed -i "s|^define('DB_HOST'.*|define('DB_HOST', 'localhost');|g" $CCUI_BOOTSTRAP
 	sed -i "s|^define('DB_PASS'.*|define('DB_PASS', '$(echo ${cmon_password} | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')');|g" $CCUI_BOOTSTRAP
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
