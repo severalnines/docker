@@ -40,6 +40,9 @@ ping_stats() {
 ## Check whether initializing MySQL data directory is necessary.
 ## /var/lib/mysql on new volume is usually empty.
 
+echo ">> Starting ClusterControl container [$(date)]"
+echo ">> Controller version: $(cmon -v | grep -i version | awk {'print $3'})"
+
 if [ "$(ls -A $DATADIR)" ]; then
 	echo ">> Datadir is not empty.."
 	echo ">> Checking for lost+found existance"
@@ -289,7 +292,7 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	echo
 	echo '>> Starting CMON to grant s9s CLI user..'
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
-	sleep 3
+	sleep 5
 	cmon_user=dba
 
 	echo '>> Generating key for s9s CLI'
