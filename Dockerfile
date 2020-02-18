@@ -22,7 +22,6 @@ ADD conf/my.cnf /etc/my.cnf
 ADD conf/supervisord.conf /etc/supervisord.conf
 ADD conf/s9s.conf /etc/httpd/conf.d/s9s.conf
 ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
-ADD conf/cmon.default /etc/default/cmon
 
 ## post-installation: setting up Apache
 RUN cp -f /var/www/html/clustercontrol/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
