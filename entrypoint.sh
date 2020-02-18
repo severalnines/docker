@@ -291,13 +291,14 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 
 	echo
 	echo '>> Starting CMON to grant s9s CLI user..'
+	[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
 	sleep 5
 	cmon_user=dba
 
 	echo '>> Generating key for s9s CLI'
 	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
-	/usr/bin/s9s user --create --generate-key --group=admins --controller=https://localhost:9501 $cmon_user
+	/usr/bin/s9s user --create --generate-key --group=admins --controller=https://localhost:9501 $cmon_user || :
 	S9S_CONF=/root/.s9s/s9s.conf
 	if [ -f $S9S_CONF ]; then
 		echo '>> Configuring s9s.conf'
@@ -308,12 +309,17 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	fi
 
 	echo
-	kill -15 $(pidof cmon)
-	while ($pidof cmon); do
-		echo '>> Stopping CMON..'
-		sleep 1
-	done
-	echo '>> CMON stopped'
+
+	PIDCMON=$(pidof cmon)
+        if [ ! -z $PIDCMON ]; then
+                kill -15 $PIDCMON
+
+                while (pidof cmon); do
+                        echo '>> Stopping CMON..'
+                        sleep 5
+                done
+                echo '>> CMON stopped'
+        fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
 		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP

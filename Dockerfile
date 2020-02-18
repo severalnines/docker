@@ -1,4 +1,4 @@
-## ClusterControl 1.7.5-3638, Percona Server 5.7, CentOS 7 64bit
+## ClusterControl 1.7.5-3679, Percona Server 5.7, CentOS 7 64bit
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
