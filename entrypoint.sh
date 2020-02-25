@@ -310,8 +310,9 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 
 	echo
 
-	PIDCMON=$(pidof cmon)
-        if [ ! -z $PIDCMON ]; then
+        PIDCMON=$(pidof cmon)
+        echo "PID of cmon(s): --${PIDCMON}--"
+        if [ ! -z "$PIDCMON" ]; then
                 kill -15 $PIDCMON
 
                 while (pidof cmon); do
