@@ -23,6 +23,8 @@ DATADIR=/var/lib/mysql
 PIDFILE=${DATADIR}/mysqld.pid
 SOCKETFILE=${DATADIR}/mysql.sock
 MYSQL_INITIALIZE=0
+INSTALLATION_STATUS=0
+LAST_MSG='Installation successful'
 
 ping_stats() {
         [[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
@@ -106,6 +108,8 @@ if [ ! -z $(pidof mysqld) ]; then
 	fi
 else
         echo '>> MySQL failed to start. Aborting..'
+	INSTALLATION_STATUS=1
+	LAST_MSG='MySQL failed to start. Aborting..'
         exit 1
 fi
 
