@@ -207,7 +207,7 @@ else
 
 	## Configure CMON service
 
-	CMON_TOKEN=$(python -c 'import uuid; print uuid.uuid4()' | sha1sum | cut -f1 -d' ')
+	CMON_TOKEN=$(cat /proc/sys/kernel/random/uuid | sha1sum | cut -f1 -d' ')
 	echo
 	echo ">> Setting up minimal $CMON_CONFIG.."
 	cat /dev/null > $CMON_CONFIG
