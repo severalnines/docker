@@ -152,7 +152,7 @@ generate_ssh_key() {
 
 if [ $INITIALIZED -eq 1 ]; then
 
-	## Bootstrap ClsuterControl
+	## Bootstrap ClusterControl
 
 	sleep 5
 	[ ! -f $MYSQL_CMON_CNF ] && create_mysql_cmon_cnf
@@ -272,8 +272,6 @@ EOF
 
 	[ -f $CMON_CONFIG ] && rm -f /etc/cmon.cnf
 
-	ping_stats
-
 	echo "!! Please remember following information which generated during entrypoint !!" > $BANNER_FILE
 	[ -z "$CMON_PASSWORD" ] && echo ">> Generated CMON password: $cmon_password" >> $BANNER_FILE || echo "CMON password: $cmon_password" >> $BANNER_FILE
 	[ -z "$MYSQL_ROOT_PASSWORD" ] &&	echo "Generated MySQL root password: $mysql_root_password" >> $BANNER_FILE || echo "MySQL root password: $mysql_root_password" >> $BANNER_FILE
@@ -339,6 +337,7 @@ stop_mysqld
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
 [ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
+ping_stats
 
 # Start everything
 
