@@ -89,6 +89,29 @@ The recommended persistent volumes are:
 * `/var/lib/cmon` - ClusterControl internal files.
 * `/root/backups` - Default backup directory only if ClusterControl is the backup destination
 
+Alternatively, if you would like to enable agent-based monitoring via Prometheus, you have to make the following path persistent as well:
+* `/var/lib/prometheus` - Prometheus data directory.
+* `/etc/prometheus` - Prometheus configuration directory.
+
+Therefore, the run command for agent-based monitoring via Prometheus would be:
+
+```bash
+$ docker run -d --name clustercontrol \
+--network db-cluster \
+--ip 192.168.10.10 \
+-h clustercontrol \
+-p 5000:80 \
+-p 5001:443 \
+-v /storage/clustercontrol/cmon.d:/etc/cmon.d \
+-v /storage/clustercontrol/datadir:/var/lib/mysql \
+-v /storage/clustercontrol/sshkey:/root/.ssh \
+-v /storage/clustercontrol/cmonlib:/var/lib/cmon \
+-v /storage/clustercontrol/backups:/root/backups \
+-v /storage/clustercontrol/prom_data:/var/lib/prometheus \
+-v /storage/clustercontrol/prom_conf:/etc/prometheus \
+severalnines/clustercontrol
+```
+
 After a moment, you should able to access the ClusterControl Web UI at `{host's IP address}:{host's port}`, for example:
 * HTTP: **http://192.168.10.100:5000/clustercontrol**
 * HTTPS: **https://192.168.10.100:5001/clustercontrol**
