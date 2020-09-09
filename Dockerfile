@@ -27,6 +27,7 @@ ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
 RUN cp -f /var/www/html/clustercontrol/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
         cp -f /var/www/html/clustercontrol/ssl/server.key /etc/pki/tls/private/s9server.key && \
         sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf/httpd.conf && \
+	sed -i '147iRedirectMatch ^/$ /clustercontrol/' /etc/httpd/conf/httpd.conf && \
         cp -f /var/www/html/clustercontrol/bootstrap.php.default /var/www/html/clustercontrol/bootstrap.php && \
         chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
         chmod -R 777 /var/www/html/clustercontrol/app/upload && \
