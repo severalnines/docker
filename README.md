@@ -12,7 +12,8 @@
 8. [Development](#development)
 
 ## Supported Tags ##
-* [1.8.0, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.8.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.8.0 (1.8.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.0/Dockerfile)
 * [1.7.6 (1.7.6/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.6/Dockerfile)
 * [1.7.5 (1.7.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.5/Dockerfile)
 * [1.7.4 (1.7.4/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.4/Dockerfile)
