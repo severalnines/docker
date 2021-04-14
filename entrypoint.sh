@@ -312,6 +312,12 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 
 	echo
 
+        echo ">> Generating ccrpc user"
+        /usr/bin/s9s user --create --generate-key --new-password=${CMON_TOKEN} --group=admins --controller="https://localhost:9501" ccrpc
+        /usr/bin/s9s user --set --first-name=RPC --last-name=API &>/dev/null
+
+	echo
+
         PIDCMON=$(pidof cmon)
         echo "PID of cmon(s): --${PIDCMON}--"
         if [ ! -z "$PIDCMON" ]; then
