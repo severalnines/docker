@@ -1,20 +1,22 @@
-## ClusterControl 1.8.1-4400, Percona Server 5.7, CentOS 7 64bit
+## ClusterControl 1.8.2.4467, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-controller clustercontrol-notifications clustercontrol-ssh clustercontrol-cloud clustercontrol-clud Percona-Server-server-56 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat
+ENV PACKAGE curl mailx cronie nc bind-utils clustercontrol clustercontrol-controller clustercontrol-notifications clustercontrol-ssh clustercontrol-cloud clustercontrol-clud Percona-Server-server-56 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat python-pip
 
 # install packages
 RUN yum clean all
-RUN yum -y install wget && \
+RUN yum -y install wget epel-release && \
         rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
         wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
         wget http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
-	yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm && \
+        yum -y install http://rpms.famillecollet.com/enterprise/remi-release-7.rpm && \
+        sed -i s/enabled=0/enabled=1/g /etc/yum.repos.d/remi-php73.repo && \
+        yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm && \
         yum -y install $PACKAGE && \
-        easy_install supervisor && \
+        pip install supervisor && \
         yum clean all
 
 ## add configuration files
@@ -24,17 +26,17 @@ ADD conf/s9s.conf /etc/httpd/conf.d/s9s.conf
 ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
 
 ## post-installation: setting up Apache
-RUN cp -f /var/www/html/clustercontrol/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
-        cp -f /var/www/html/clustercontrol/ssl/server.key /etc/pki/tls/private/s9server.key && \
+RUN mv /var/www/html/clustercontrol/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
+        mv /var/www/html/clustercontrol/ssl/server.key /etc/pki/tls/private/s9server.key && \
         sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf/httpd.conf && \
-	sed -i '147iRedirectMatch ^/$ /clustercontrol/' /etc/httpd/conf/httpd.conf && \
+        sed -i '147iRedirectMatch ^/$ /clustercontrol/' /etc/httpd/conf/httpd.conf && \
         cp -f /var/www/html/clustercontrol/bootstrap.php.default /var/www/html/clustercontrol/bootstrap.php && \
         chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
         chmod -R 777 /var/www/html/clustercontrol/app/upload && \
         chown -Rf apache.apache /var/www/html/clustercontrol/ && \
-	mkdir /root/backups
+        mkdir /root/backups
 
-VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh"]
+VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh","/var/lib/cmon"]
 
 COPY change_ip.sh /root/change_ip.sh
 COPY entrypoint.sh /entrypoint.sh
