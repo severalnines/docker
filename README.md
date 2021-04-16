@@ -8,24 +8,19 @@
 4. [Run Container](#run-container)
 5. [Environment Variables](#environment-variables)
 6. [Service Management](#service-management)
-7. [Examples](#examples)
-8. [Development](#development)
+7. [LDAP](#ldap)
+8. [Examples](#examples)
+9. [Development](#development)
+10. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.8.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.8.2, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.8.1 (1.8.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.1/Dockerfile)
 * [1.8.0 (1.8.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.0/Dockerfile)
-* [1.7.6 (1.7.6/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.6/Dockerfile)
-* [1.7.5 (1.7.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.5/Dockerfile)
-* [1.7.4 (1.7.4/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.4/Dockerfile)
-* [1.7.3 (1.7.3/Dockerfile)](https://github.com/severalnines/docker/blog/1.7.3/Dockerfile)
-* [1.7.2 (1.7.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.2/Dockerfile)
-* [1.7.1 (1.7.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.1/Dockerfile)
-* [1.7.0 (1.7.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.7.0/Dockerfile)
-
 
 ## Overview ##
 
-ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to deploy new set of database servers/clusters or manage existing database servers/clusters. 
+ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to deploy new set of database servers/clusters or manage existing database servers/clusters.
 
 Supported database servers/clusters:
 * Galera Cluster for MySQL
@@ -117,7 +112,7 @@ After a moment, you should able to access the ClusterControl Web UI at `{host's 
 
 We have built a complement image called `centos-ssh` to simplify database deployment with ClusterControl. It supports automatic deployment (Galera Cluster) or it can also be used as a base image for database containers (all cluster types are supported). Details at [here](https://github.com/severalnines/docker-centos-ssh).
 
-## Environment Variables ## 
+## Environment Variables ##
 
 * `CMON_PASSWORD={string}`
 	- MySQL password for user 'cmon'. Default to 'cmon'. Use `docker secret` is recommended.
@@ -162,6 +157,16 @@ supervisor>
 
 In some cases, you might need to restart the related service after a manual upgrade or configuration tweaking. Details on the start commands can be found inside `conf/supervisord.conf`.
 
+## LDAP ##
+
+Starting from version 1.8.2, ClusterControl introduces a new user management system, as described [here](https://docs.severalnines.com/docs/clustercontrol/user-guide-gui/sidebar-2/user-management/). For LDAP, the configuration will be stored inside `/etc/cmon-ldap.cnf`. Since the Docker volume is not configured for this path, to make it persistent, the configuration file has to be moved into the `/etc/cmon.d/` directory. The entrypoint script has been added a logic to handle file copying to `/etc/cmon.d/cmon-ldap.cnf` and symlink it to `/etc/cmon-ldap.cnf`.
+
+Therefore, whenever you have configured the LDAP Settings (*ClusterControl -> User Management -> LDAP Settings*) and you want to permanently save it, you should restart the container by using the following command (to basically trigger entrypoint script):
+
+```bash
+$ docker restart clustercontrol
+```
+
 ## Examples ##
 
 * [Standalone Docker](https://github.com/severalnines/docker/tree/master/examples/docker)
@@ -169,6 +174,10 @@ In some cases, you might need to restart the related service after a manual upgr
 
 ## Development ##
 
-Please report bugs, improvements or suggestions via our support channel: [https://support.severalnines.com](https://support.severalnines.com) 
+Please report bugs, improvements or suggestions via our support channel: [https://support.severalnines.com](https://support.severalnines.com)
 
 If you have any questions, you are welcome to get in touch via our [contact us](http://www.severalnines.com/contact-us) page or email us at info@severalnines.com.
+
+## Disclaimer ##
+
+Although Severalnines offers ClusterCluster as a Docker image, it is not intended for production usage. ClusterControl product direction is never intended to run on a container environment due to its internal logic and system design. We are maintaining the Docker image on a best-effort basis, and it is not part of the product development projection and pipeline.
