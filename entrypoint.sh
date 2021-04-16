@@ -106,10 +106,10 @@ if [ ! -z $(pidof mysqld) ]; then
 		INITIALIZED=0
 	fi
 else
-				echo '>> MySQL failed to start. Aborting..'
+	echo '>> MySQL failed to start. Aborting..'
 	INSTALLATION_STATUS=1
 	LAST_MSG='MySQL failed to start. Aborting..'
-				exit 1
+	exit 1
 fi
 
 create_mysql_cmon_cnf() {
@@ -129,8 +129,8 @@ EOF
 
 generate_ssh_key() {
 	## Generate SSH keys
-				echo
-				echo ">> Generating SSH key for root at $SSH_KEY.."
+	echo
+	echo ">> Generating SSH key for root at $SSH_KEY.."
 	AUTHORIZED_FILE=/root/.ssh/authorized_keys
 	KNOWN_HOSTS=/root/.ssh/known_hosts
 	if [ -f $MOUNT_SSH_KEY ]; then
@@ -165,7 +165,7 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo
 		echo '>> Updating API token..'
 		sed -i "s|^rpc_key=.*|rpc_key=$CMON_EXISTING_TOKEN|g" $CMON_CONFIG
-					sed -i "s|^define('RPC_TOKEN'.*|define('RPC_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CCUI_BOOTSTRAP
+		sed -i "s|^define('RPC_TOKEN'.*|define('RPC_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CCUI_BOOTSTRAP
 
 		echo
 		echo '>> Retrieving existing cmon credentials..'
@@ -183,8 +183,8 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo
 		echo '>> Setting up public key directory..'
 		if [ -f $SSH_KEY ]; then
-									[ -d $PUB_KEY_DIR ] || mkdir -p $PUB_KEY_DIR
-									cat ${SSH_KEY}.pub > $PUB_KEY_DIR/cc.pub
+			[ -d $PUB_KEY_DIR ] || mkdir -p $PUB_KEY_DIR
+			cat ${SSH_KEY}.pub > $PUB_KEY_DIR/cc.pub
 			chown -Rf apache:apache  $PUB_KEY_DIR
 		else
 			generate_ssh_key
