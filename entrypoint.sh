@@ -10,8 +10,6 @@ SSH_KEY=/root/.ssh/id_rsa
 MOUNT_SSH_KEY=/mnt/key/id_rsa
 WWWROOT=/var/www/html
 PUB_KEY_DIR=$WWWROOT/keys
-#CMONAPI_BOOTSTRAP=$WWWROOT/cmonapi/config/bootstrap.php
-#CMONAPI_DATABASE=$WWWROOT/cmonapi/config/database.php
 CCUI_BOOTSTRAP=$WWWROOT/clustercontrol/bootstrap.php
 CCUI_SQL=$WWWROOT/clustercontrol/sql/dc-schema.sql
 BANNER_FILE='/root/README_IMPORTANT'
@@ -25,17 +23,18 @@ SOCKETFILE=${DATADIR}/mysql.sock
 MYSQL_INITIALIZE=0
 INSTALLATION_STATUS=0
 LAST_MSG='Installation successful'
+S9S_CLI=/usr/bin/s9s
 
 ping_stats() {
-        [[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
-        UUID=$(basename "$(head /proc/1/cgroup)" | sed "s/docker-\(.*\).scope/\\1/")
-        OS=$(cat /proc/version)
-        OS=$(python -c "import sys,urllib; print urllib.quote('${OS}')")
-        MEM=$(free -m | awk '/Mem:/ { print "T:" $2, "F:" $4}')
-        MEM=$(python -c "import sys,urllib; print urllib.quote('${MEM}')")
-        LAST_MSG=$(python -c "import sys,urllib; print urllib.quote('${LAST_MSG}')")
-        CONTAINER=docker
-        wget -T 10 -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null
+	[[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
+	UUID=$(basename "$(head /proc/1/cgroup)" | sed "s/docker-\(.*\).scope/\\1/")
+	OS=$(cat /proc/version)
+	OS=$(python -c "import sys,urllib; print urllib.quote('${OS}')")
+	MEM=$(free -m | awk '/Mem:/ { print "T:" $2, "F:" $4}')
+	MEM=$(python -c "import sys,urllib; print urllib.quote('${MEM}')")
+	LAST_MSG=$(python -c "import sys,urllib; print urllib.quote('${LAST_MSG}')")
+	CONTAINER=docker
+	wget -T 10 -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null
 }
 
 
@@ -62,8 +61,8 @@ else
 fi
 
 if [ $MYSQL_INITIALIZE -eq 1 ]; then
-        echo ">> Datadir is empty. Initializing datadir.."
-        mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
+	echo ">> Datadir is empty. Initializing datadir.."
+	mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
 fi
 
 echo ">> Ensure MySQL datadir has correct permission/ownership.."
@@ -107,10 +106,10 @@ if [ ! -z $(pidof mysqld) ]; then
 		INITIALIZED=0
 	fi
 else
-        echo '>> MySQL failed to start. Aborting..'
+				echo '>> MySQL failed to start. Aborting..'
 	INSTALLATION_STATUS=1
 	LAST_MSG='MySQL failed to start. Aborting..'
-        exit 1
+				exit 1
 fi
 
 create_mysql_cmon_cnf() {
@@ -130,8 +129,8 @@ EOF
 
 generate_ssh_key() {
 	## Generate SSH keys
-        echo
-        echo ">> Generating SSH key for root at $SSH_KEY.."
+				echo
+				echo ">> Generating SSH key for root at $SSH_KEY.."
 	AUTHORIZED_FILE=/root/.ssh/authorized_keys
 	KNOWN_HOSTS=/root/.ssh/known_hosts
 	if [ -f $MOUNT_SSH_KEY ]; then
@@ -166,7 +165,7 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo
 		echo '>> Updating API token..'
 		sed -i "s|^rpc_key=.*|rpc_key=$CMON_EXISTING_TOKEN|g" $CMON_CONFIG
-	        sed -i "s|^define('RPC_TOKEN'.*|define('RPC_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CCUI_BOOTSTRAP
+					sed -i "s|^define('RPC_TOKEN'.*|define('RPC_TOKEN', '$CMON_EXISTING_TOKEN');|g" $CCUI_BOOTSTRAP
 
 		echo
 		echo '>> Retrieving existing cmon credentials..'
@@ -184,8 +183,8 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo
 		echo '>> Setting up public key directory..'
 		if [ -f $SSH_KEY ]; then
-	                [ -d $PUB_KEY_DIR ] || mkdir -p $PUB_KEY_DIR
-        	        cat ${SSH_KEY}.pub > $PUB_KEY_DIR/cc.pub
+									[ -d $PUB_KEY_DIR ] || mkdir -p $PUB_KEY_DIR
+									cat ${SSH_KEY}.pub > $PUB_KEY_DIR/cc.pub
 			chown -Rf apache:apache  $PUB_KEY_DIR
 		else
 			generate_ssh_key
@@ -193,7 +192,7 @@ if [ $INITIALIZED -eq 1 ]; then
 
 		echo
 		echo '>> Updating existing dcps schema'
-		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -f dcps < $CCUI_SQL 
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -f dcps < $CCUI_SQL
 
 		echo
 		echo '>> Bootstrapping completed.'
@@ -292,15 +291,15 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	## Configure s9s CLI
 
 	echo
-	echo '>> Starting CMON to grant s9s CLI user..'
+	echo '>> Starting CMON to grant s9s CLI users..'
 	[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
 	/usr/sbin/cmon --rpc-port=9500 --events-client=http://127.0.0.1:9510
-	sleep 5
+	sleep 7
 	cmon_user=dba
 
 	echo '>> Generating key for s9s CLI'
 	[ -d /var/lib/cmon ] || mkdir -p /var/lib/cmon
-	/usr/bin/s9s user --create --generate-key --group=admins --controller=https://localhost:9501 $cmon_user || :
+	$S9S_CLI user --create --generate-key --group=admins --controller="https://localhost:9501" $cmon_user || :
 	S9S_CONF=/root/.s9s/s9s.conf
 	if [ -f $S9S_CONF ]; then
 		echo '>> Configuring s9s.conf'
@@ -310,19 +309,61 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 		echo 'rpc_tls              = true' >> $S9S_CONF
 	fi
 
+	## Changes 1.8.2 - start ##
+	## Configure ccrpc user
+
+	export S9S_USER_CONFIG=/root/.s9s/ccrpc.conf
+	[ ! -z $CMON_EXISTING_TOKEN ] && CMON_TOKEN=$CMON_EXISTING_TOKEN
+	$S9S_CLI user --create --generate-key --new-password=${CMON_TOKEN} --group=admins --controller="https://localhost:9501" ccrpc || :
+	unset S9S_USER_CONFIG
+
 	echo
+	echo '>> Testing ccrpc user..'
+	if $S9S_CLI user --cmon-user=ccrpc --password=${CMON_TOKEN} --list &>/dev/null; then
+		echo '>> Looks good.'
+	else
+		echo '>> Unable to connect to the cmon controller as ccrpc user.'
+		echo '>> Please fix it later, once container has started.'
+	fi
 
-        PIDCMON=$(pidof cmon)
-        echo "PID of cmon(s): --${PIDCMON}--"
-        if [ ! -z "$PIDCMON" ]; then
-                kill -15 $PIDCMON
+	## Handling /etc/cmon-ldap.cnf
+	## Workaround: make sure cmon-ldap.cnf is located under /etc/cmon.d for persistent storage
 
-                while (pidof cmon); do
-                        echo '>> Stopping CMON..'
-                        sleep 5
-                done
-                echo '>> CMON stopped'
-        fi
+	DEFAULT_CMON_LDAP=/etc/cmon-ldap.cnf
+	DOCKER_CMON_LDAP=/etc/cmon.d/cmon-ldap.cnf
+
+	echo
+	echo '>> Checking /etc/cmon-ldap.cnf..'
+
+	if [ -f $DOCKER_CMON_LDAP ]; then
+		if [ -L $DEFAULT_CMON_LDAP ]; then
+			echo '>> /etc/cmon-ldap.cnf symlinked to /etc/cmon.d/cmon-ldap.cnf..'
+		else
+			rm -f $DEFAULT_CMON_LDAP
+			echo '>> Linking /etc/cmon-ldap.cnf with existing /etc/cmon.d/cmon-ldap.cnf..'
+			ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
+		fi
+	else
+		echo '>> Cant find existing /etc/cmon.d/cmon-ldap.cnf. Trying to symlink it if exists..'
+		[ -f $DEFAULT_CMON_LDAP ] && mv $DEFAULT_CMON_LDAP $DOCKER_CMON_LDAP && ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
+	fi
+
+	## Changes 1.8.2 - end ##
+
+	echo
+	echo '>> Checking PID of cmon process..'
+
+	PIDCMON=$(pidof cmon)
+	echo ">> PID of cmon(s): -- ${PIDCMON} --"
+
+	if [ ! -z "$PIDCMON" ]; then
+		kill -15 $PIDCMON
+		while (pidof cmon); do
+			echo '>> Stopping CMON..'
+			sleep 5
+		done
+		echo '>> CMON stopped'
+	fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
 		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
