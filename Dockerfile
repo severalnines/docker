@@ -1,4 +1,4 @@
-## ClusterControl 1.8.2.4531, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
+## ClusterControl 1.8.2-4551, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
