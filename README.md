@@ -14,7 +14,8 @@
 10. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.8.2, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.0, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.8.2 (1.8.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.2/Dockerfile)
 * [1.8.1 (1.8.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.1/Dockerfile)
 * [1.8.0 (1.8.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.0/Dockerfile)
 
@@ -161,7 +162,7 @@ In some cases, you might need to restart the related service after a manual upgr
 
 Starting from version 1.8.2, ClusterControl introduces a new user management system, as described [here](https://docs.severalnines.com/docs/clustercontrol/user-guide-gui/sidebar-2/user-management/). For LDAP, the configuration will be stored inside `/etc/cmon-ldap.cnf`. Since the Docker volume is not configured for this path, to make it persistent, the configuration file has to be moved into the `/etc/cmon.d/` directory. The entrypoint script has been added a logic to handle file copying to `/etc/cmon.d/cmon-ldap.cnf` and symlink it to `/etc/cmon-ldap.cnf`.
 
-Therefore, whenever you have configured the LDAP Settings (*ClusterControl -> User Management -> LDAP Settings*) and you want to permanently save it, you should restart the container by using the following command (to basically trigger entrypoint script):
+Therefore, whenever you have configured the LDAP Settings (*ClusterControl -> User Management -> LDAP Settings*) and you want to permanently save it, you should restart the container by using the following command (to basically trigger the entrypoint script):
 
 ```bash
 $ docker restart clustercontrol
