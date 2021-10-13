@@ -1,4 +1,4 @@
-## ClusterControl 1.9.0-4769, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
+## ClusterControl 1.9.0-4846, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
@@ -17,6 +17,7 @@ RUN yum -y install wget epel-release && \
         yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm && \
         yum -y install $PACKAGE && \
         pip install supervisor && \
+	yum -y --disablerepo=epel upgrade nss ca-certificates openssl && \
         yum clean all
 
 ## add configuration files
