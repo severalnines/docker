@@ -13,7 +13,7 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfiile)
+* [1.9.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
 * [1.9.0 (1.9.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.0/Dockerfile)
 * [1.8.2 (1.8.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.2/Dockerfile)
 * [1.8.1 (1.8.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.1/Dockerfile)
@@ -128,9 +128,9 @@ Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandator
 ---
 
 After a moment, you should be able to access the following ClusterControl Web UIs:
-* ClusterControl GUI v1 HTTP: **http://192.168.10.100:5000/clustercontrol**
-* ClusterCOntrol GUI v1 HTTPS: **https://192.168.10.100:5001/clustercontrol**
-* ClusterControl GUI v2 HTTPS: **https://192.168.10.100:9443/**
+* ClusterControl GUI v1 HTTP: **http://192.168.11.111:5000/clustercontrol**
+* ClusterCOntrol GUI v1 HTTPS: **https://192.168.11.111:5001/clustercontrol**
+* ClusterControl GUI v2 HTTPS: **https://192.168.11.111:9443/**
 
 ## Environment Variables ##
 
