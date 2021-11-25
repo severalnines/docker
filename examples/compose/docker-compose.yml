@@ -5,7 +5,11 @@ services:
     image: severalnines/clustercontrol
     ports:
       - "5000:80"
+      - "5001:443"
+      - "9443:9443"
+      - "19501:19501"
     environment:
+      DOCKER_HOST_ADDRESS: 192.168.11.111
       CMON_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
       MYSQL_ROOT_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
     volumes:
@@ -14,10 +18,13 @@ services:
       - cc-ssh:/root/.ssh
       - cc-cmonlib:/var/lib/cmon
       - cc-backups:/root/backups
-
+      - prom-data:/var/lib/prometheus
+      - prom-conf:/etc/prometheus
 volumes:
   cc-cmond:
   cc-datadir:
   cc-ssh:
   cc-cmonlib:
   cc-backups:
+  prom-data:
+  prom-conf:

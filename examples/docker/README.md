@@ -32,7 +32,7 @@ The following diagram illustrates our target setup, a 4-node MySQL Replication w
 docker network create --subnet=192.168.10.0/24 db-cluster
 ```
 
-2. Run ClusterControl container with dedicated IP address 192.168.10.10, publish HTTP port 5000 and create persistent volumes to survive across upgrade/restart/reschedule:
+2. Run ClusterControl container with dedicated container IP address 192.168.10.10, publish HTTP port 5000 and create persistent volumes to survive across upgrade/restart/reschedule:
 
 ```bash
 docker run -d --name=clustercontrol \
@@ -40,7 +40,10 @@ docker run -d --name=clustercontrol \
 --ip 192.168.10.10 \
 -p 5000:80 \
 -p 5001:443 \
+-p 9443:9443 \
+-p 19501:19501 \
 -h clustercontrol \
+-e DOCKER_HOST_ADDRESS=192.168.11.111 \
 -v /storage/clustercontrol/sshkey:/root/.ssh \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
@@ -137,7 +140,10 @@ The following diagram illustrates our target setup, a 5-node Galera cluster:
 docker run -d --name=clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
+-p 9443:9443 \
+-p 19501:19501 \
 -h clustercontrol \
+-e DOCKER_HOST_ADDRESS=192.168.11.111 \
 -v /storage/clustercontrol/sshkey:/root/.ssh \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \

@@ -8,13 +8,13 @@
 4. [Run Container](#run-container)
 5. [Environment Variables](#environment-variables)
 6. [Service Management](#service-management)
-7. [LDAP](#ldap)
-8. [Examples](#examples)
-9. [Development](#development)
-10. [Disclaimer](#disclaimer)
+7. [Examples](#examples)
+8. [Development](#development)
+9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.0, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.1, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfiile)
+* [1.9.0 (1.9.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.0/Dockerfile)
 * [1.8.2 (1.8.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.2/Dockerfile)
 * [1.8.1 (1.8.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.1/Dockerfile)
 * [1.8.0 (1.8.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.0/Dockerfile)
@@ -24,15 +24,15 @@
 ClusterControl is a management and automation software for database clusters. It helps deploy, monitor, manage and scale your database cluster. This Docker image comes with ClusterControl installed and configured with all of its components so you can immediately use it to deploy new set of database servers/clusters or manage existing database servers/clusters.
 
 Supported database servers/clusters:
-* Galera Cluster for MySQL
 * Percona XtraDB Cluster
 * MariaDB Galera Cluster
-* MySQL Replication
-* MySQL single instance
+* MySQL/MariaDB (standalone & replication)
 * MySQL Cluster (NDB)
-* MongoDB sharded cluster
-* MongoDB replica set
-* PostgreSQL (single instance/streaming replication)
+* MongoDB (replica set & sharded cluster)
+* PostgreSQL (standalone & streaming replication)
+* TimescaleDB (standalone & streaming replication)
+* Redis (replication & Sentinel) - via ClusterControl GUI v2
+* SQL Server for Linux (standalone) - via ClusterControl GUI v2
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
@@ -44,7 +44,7 @@ $ docker pull severalnines/clustercontrol
 ```
 
 The image is based on CentOS 7 with Apache 2.4, which consists of ClusterControl packages and prerequisite components:
-* ClusterControl controller, UI, cloud, notification and web-ssh packages installed via Severalnines repository.
+* ClusterControl controller, GUI v1, GUI v2, cloud, notification and web-ssh packages installed via Severalnines repository.
 * MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
 * Apache, file and directory permission for ClusterControl UI with SSL installed.
 * SSH key for ClusterControl usage.
@@ -69,6 +69,9 @@ $ docker run -d --name clustercontrol \
 -h clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
+-p 9443:9443 \
+-p 19501:19501 \
+-e DOCKER_HOST_ADDRESS=192.168.11.111 \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/sshkey:/root/.ssh \
@@ -77,6 +80,13 @@ $ docker run -d --name clustercontrol \
 severalnines/clustercontrol
 ```
 
+---
+**ATTENTION**
+
+Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandatory for ClusterControl GUI v2 to run correctly. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
+
+---
+
 The recommended persistent volumes are:
 * `/etc/cmon.d` - ClusterControl configuration files.
 * `/var/lib/mysql` - MySQL datadir to host `cmon` and `dcps` database.
@@ -84,7 +94,7 @@ The recommended persistent volumes are:
 * `/var/lib/cmon` - ClusterControl internal files.
 * `/root/backups` - Default backup directory only if ClusterControl is the backup destination
 
-Alternatively, if you would like to enable agent-based monitoring via Prometheus, you have to make the following path persistent as well:
+Alternatively, if you would like to enable agent-based monitoring via Prometheus, you have to make the following paths persistent as well:
 * `/var/lib/prometheus` - Prometheus data directory.
 * `/etc/prometheus` - Prometheus configuration directory.
 
@@ -97,23 +107,37 @@ $ docker run -d --name clustercontrol \
 -h clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
+-p 9443:9443 \
+-p 19501:19501 \
+-e DOCKER_HOST_ADDRESS=192.168.11.111 \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/sshkey:/root/.ssh \
 -v /storage/clustercontrol/cmonlib:/var/lib/cmon \
 -v /storage/clustercontrol/backups:/root/backups \
--v /storage/clustercontrol/prom_data:/var/lib/prometheus \
--v /storage/clustercontrol/prom_conf:/etc/prometheus \
+-v /storage/clustercontrol/prom-data:/var/lib/prometheus \
+-v /storage/clustercontrol/prom-conf:/etc/prometheus \
 severalnines/clustercontrol
 ```
 
-After a moment, you should able to access the ClusterControl Web UI at `{host's IP address}:{host's port}`, for example:
-* HTTP: **http://192.168.10.100:5000/clustercontrol**
-* HTTPS: **https://192.168.10.100:5001/clustercontrol**
+---
+**ATTENTION**
 
-We have built a complement image called `centos-ssh` to simplify database deployment with ClusterControl. It supports automatic deployment (Galera Cluster) or it can also be used as a base image for database containers (all cluster types are supported). Details at [here](https://github.com/severalnines/docker-centos-ssh).
+Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandatory for ClusterControl GUI v2 to run correctly. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
+
+---
+
+After a moment, you should be able to access the following ClusterControl Web UIs:
+* ClusterControl GUI v1 HTTP: **http://192.168.10.100:5000/clustercontrol**
+* ClusterCOntrol GUI v1 HTTPS: **https://192.168.10.100:5001/clustercontrol**
+* ClusterControl GUI v2 HTTPS: **https://192.168.10.100:9443/**
 
 ## Environment Variables ##
+
+* `DOCKER_HOST_ADDRESS={IP address or hostname}`
+        - This value should be the same as the Docker host primary IP address, or hostname/FQDN that resolves to the Docker host's primary IP address.
+	- Starting from ClusterControl 1.9.1, this environment variable is mandatory. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
+        - Example: `DOCKER_HOST_ADDRESS=192.168.11.111`
 
 * `CMON_PASSWORD={string}`
 	- MySQL password for user 'cmon'. Default to 'cmon'. Use `docker secret` is recommended.
@@ -126,7 +150,7 @@ We have built a complement image called `centos-ssh` to simplify database deploy
 
 ## Service Management ##
 
-Starting from version 1.4.2, ClusterControl requires a number of processes to be running:
+ClusterControl requires a number of processes to be running:
 * sshd - SSH daemon. The main communication channel.
 * mysqld - MySQL backend runs on Percona Server 5.6.
 * httpd - Web server running on Apache 2.4.
@@ -156,17 +180,7 @@ cmon                             RUNNING   pid 2838, uptime 0:11:12
 supervisor>
 ```
 
-In some cases, you might need to restart the related service after a manual upgrade or configuration tweaking. Details on the start commands can be found inside `conf/supervisord.conf`.
-
-## LDAP ##
-
-Starting from version 1.8.2, ClusterControl introduces a new user management system, as described [here](https://docs.severalnines.com/docs/clustercontrol/user-guide-gui/sidebar-2/user-management/). For LDAP, the configuration will be stored inside `/etc/cmon-ldap.cnf`. Since the Docker volume is not configured for this path, to make it persistent, the configuration file has to be moved into the `/etc/cmon.d/` directory. The entrypoint script has been added a logic to handle file copying to `/etc/cmon.d/cmon-ldap.cnf` and symlink it to `/etc/cmon-ldap.cnf`.
-
-Therefore, whenever you have configured the LDAP Settings (*ClusterControl -> User Management -> LDAP Settings*) and you want to permanently save it, you should restart the container by using the following command (to basically trigger the entrypoint script):
-
-```bash
-$ docker restart clustercontrol
-```
+In some cases, you might need to restart the related service after a manual upgrade or configuration tuning. Details on the start commands can be found inside `conf/supervisord.conf`.
 
 ## Examples ##
 

@@ -5,6 +5,22 @@ set -e
 [ -z "$CMON_PASSWORD" ] && cmon_password='cmon' || cmon_password=$CMON_PASSWORD
 [ -z "$MYSQL_ROOT_PASSWORD" ] && mysql_root_password='password' || mysql_root_password=$MYSQL_ROOT_PASSWORD
 
+# changes in 1.9.1 - start
+if [ -z "$DOCKER_HOST_ADDRESS" ]; then
+	echo '>> Unable to start because DOCKER_HOST_ADDRESS is empty.'
+	echo '>> New in ClusterControl 1.9.1:'
+	echo '   Kindly specify the DOCKER_HOST_ADDRESS environment variable.'
+	echo '   This value should be the same as the Docker host primary IP address (or hostname/FQDN) where you will connect.'
+	echo '   If the container is running on a bridge network, do publish port 9443 and 19501 as well.'
+	echo '   This is mandatory for ClusterControl GUI v2 to operate correctly.'
+	echo '   Example: '
+	echo '       -e DOCKER_HOST_ADDRESS="192.168.10.10" \'
+	echo '	     -p 9443:9443 \'
+	echo '	     -p 19501:19501 \'
+	exit 1
+fi
+# changes in 1.9.1 - end
+
 CMON_CONFIG=/etc/cmon.d/cmon.cnf
 SSH_KEY=/root/.ssh/id_rsa
 MOUNT_SSH_KEY=/mnt/key/id_rsa
@@ -329,24 +345,24 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	## Handling /etc/cmon-ldap.cnf
 	## Workaround: make sure cmon-ldap.cnf is located under /etc/cmon.d for persistent storage
 
-	DEFAULT_CMON_LDAP=/etc/cmon-ldap.cnf
-	DOCKER_CMON_LDAP=/etc/cmon.d/cmon-ldap.cnf
+#	DEFAULT_CMON_LDAP=/etc/cmon-ldap.cnf
+#	DOCKER_CMON_LDAP=/etc/cmon.d/cmon-ldap.cnf
 
-	echo
-	echo '>> Checking /etc/cmon-ldap.cnf..'
+#	echo
+#	echo '>> Checking /etc/cmon-ldap.cnf..'
 
-	if [ -f $DOCKER_CMON_LDAP ]; then
-		if [ -L $DEFAULT_CMON_LDAP ]; then
-			echo '>> /etc/cmon-ldap.cnf symlinked to /etc/cmon.d/cmon-ldap.cnf..'
-		else
-			rm -f $DEFAULT_CMON_LDAP
-			echo '>> Linking /etc/cmon-ldap.cnf with existing /etc/cmon.d/cmon-ldap.cnf..'
-			ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
-		fi
-	else
-		echo '>> Cant find existing /etc/cmon.d/cmon-ldap.cnf. Trying to symlink it if exists..'
-		[ -f $DEFAULT_CMON_LDAP ] && mv $DEFAULT_CMON_LDAP $DOCKER_CMON_LDAP && ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
-	fi
+#	if [ -f $DOCKER_CMON_LDAP ]; then
+#		if [ -L $DEFAULT_CMON_LDAP ]; then
+#			echo '>> /etc/cmon-ldap.cnf symlinked to /etc/cmon.d/cmon-ldap.cnf..'
+#		else
+#			rm -f $DEFAULT_CMON_LDAP
+#			echo '>> Linking /etc/cmon-ldap.cnf with existing /etc/cmon.d/cmon-ldap.cnf..'
+#			ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
+#		fi
+#	else
+#		echo '>> Cant find existing /etc/cmon.d/cmon-ldap.cnf. Trying to symlink it if exists..'
+#		[ -f $DEFAULT_CMON_LDAP ] && mv $DEFAULT_CMON_LDAP $DOCKER_CMON_LDAP && ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
+#	fi
 
 	## Changes 1.8.2 - end ##
 
@@ -368,6 +384,9 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
 		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
 	fi
+	
+	CCUI2_CONFIG=/var/www/html/clustercontrol2/config.js
+	sed -i "s|^  CMON_API_URL.*|  CMON_API_URL: 'https:\/\/${DOCKER_HOST_ADDRESS}:19501\/v2',|g" $CCUI2_CONFIG
 fi
 
 # Clean up

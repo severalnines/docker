@@ -1,10 +1,10 @@
-## ClusterControl 1.9.0-4894, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
+## ClusterControl 1.9.1-4940, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
 
 ## list of packages to be installed by package manager
-ENV PACKAGES curl mailx cronie nc bind-utils clustercontrol clustercontrol-controller clustercontrol-notifications clustercontrol-ssh clustercontrol-cloud clustercontrol-clud Percona-Server-server-56 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat python-pip
+ENV PACKAGES curl mailx cronie nc bind-utils clustercontrol clustercontrol2 clustercontrol-controller clustercontrol-notifications clustercontrol-ssh clustercontrol-cloud clustercontrol-clud Percona-Server-server-56 openssh-clients openssh-server httpd php php-mysql php-ldap php-gd php-curl mod_ssl s9s-tools sudo python-setuptools sysvinit-tools iproute socat python-pip
 
 # install packages
 RUN yum clean all
@@ -51,16 +51,17 @@ ADD conf/my.cnf /etc/my.cnf
 ADD conf/supervisord.conf /etc/supervisord.conf
 ADD conf/s9s.conf /etc/httpd/conf.d/s9s.conf
 ADD conf/ssl.conf /etc/httpd/conf.d/ssl.conf
+ADD conf/cc-frontend.conf /etc/httpd/conf.d/cc-frontend.conf
+ADD conf/cc-proxy.conf /etc/httpd/conf.d/cc-proxy.conf
 
 ## post-installation: setting up Apache
 RUN mv /var/www/html/clustercontrol/ssl/server.crt /etc/pki/tls/certs/s9server.crt && \
         mv /var/www/html/clustercontrol/ssl/server.key /etc/pki/tls/private/s9server.key && \
         sed -i 's|AllowOverride None|AllowOverride All|g' /etc/httpd/conf/httpd.conf && \
-        sed -i '147iRedirectMatch ^/$ /clustercontrol/' /etc/httpd/conf/httpd.conf && \
         cp -f /var/www/html/clustercontrol/bootstrap.php.default /var/www/html/clustercontrol/bootstrap.php && \
         chmod -R 777 /var/www/html/clustercontrol/app/tmp && \
         chmod -R 777 /var/www/html/clustercontrol/app/upload && \
-        chown -Rf apache.apache /var/www/html/clustercontrol/ && \
+        chown -Rf apache:apache /var/www/html/clustercontrol/ && \
         mkdir /root/backups
 
 VOLUME ["/etc/cmon.d","/var/lib/mysql","/root/.ssh","/var/lib/cmon"]
