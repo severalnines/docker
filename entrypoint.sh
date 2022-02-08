@@ -4,6 +4,7 @@ set -e
 # set default value if not set
 [ -z "$CMON_PASSWORD" ] && cmon_password='cmon' || cmon_password=$CMON_PASSWORD
 [ -z "$MYSQL_ROOT_PASSWORD" ] && mysql_root_password='password' || mysql_root_password=$MYSQL_ROOT_PASSWORD
+[ -z "$CMON_STOP_TIMEOUT" ] && cmon_stop_timeout=10 || cmon_stop_timeout=$CMON_STOP_TIMEOUT
 
 # changes in 1.9.1 - start
 if [ -z "$DOCKER_HOST_ADDRESS" ]; then
@@ -366,19 +367,32 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 
 	## Changes 1.8.2 - end ##
 
+	## CMON process clean up. Possible fix for #8168
 	echo
 	echo '>> Checking PID of cmon process..'
+	echo ">> CMON_STOP_TIMEOUT=$cmon_stop_timeout"
 
 	PIDCMON=$(pidof cmon)
 	echo ">> PID of cmon(s): -- ${PIDCMON} --"
 
 	if [ ! -z "$PIDCMON" ]; then
 		kill -15 $PIDCMON
-		while (pidof cmon); do
-			echo '>> Stopping CMON..'
-			sleep 5
+		for (( i=1; i<=${cmon_stop_timeout}; i++ )); do
+			if pidof cmon; then
+				echo '>> Stopping CMON with SIGTERM..'
+				echo ">> Count: $i/${cmon_stop_timeout}"
+				sleep 1
+			else
+				break
+			fi
 		done
-		echo '>> CMON stopped'
+		if pidof cmon &>/dev/null; then
+			echo '>> Timeout reached. Stopping CMON with SIGKILL..'
+			kill -9 $(pidof cmon)
+			sleep 1
+		fi
+	 	pidof cmon &>/dev/null && echo '>> CMON is still running. SIGKILL failed.' || echo '>> CMON stopped'
+		[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
 	fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
@@ -396,7 +410,6 @@ stop_mysqld
 [ -e /run/httpd/httpd.pid ] && rm -f /run/httpd/httpd.pid
 echo '>> Sleeping 15s for the stopping processes to clean up..'
 sleep 15
-[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
 ping_stats
 
 # Start everything
