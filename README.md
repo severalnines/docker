@@ -130,7 +130,7 @@ Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandator
 
 After a moment, you should be able to access the following ClusterControl Web UIs:
 * ClusterControl GUI v1 HTTP: **http://192.168.11.111:5000/clustercontrol**
-* ClusterCOntrol GUI v1 HTTPS: **https://192.168.11.111:5001/clustercontrol**
+* ClusterControl GUI v1 HTTPS: **https://192.168.11.111:5001/clustercontrol**
 * ClusterControl GUI v2 HTTPS: **https://192.168.11.111:9443/**
 
 ## Environment Variables ##
@@ -148,6 +148,10 @@ After a moment, you should be able to access the following ClusterControl Web UI
 	- MySQL root password for the ClusterControl container. Default to 'password'. Use `docker secret` is recommended.
 	- Example: `MYSQL_ROOT_PASSWORD=MyPassW0rd`
 
+* `CMON_STOP_TIMEOUT={integer}`
+	- How long to wait (in seconds) for CMON to gracefully stop (SIGTERM) during container bootstrapping process. Default is 10.
+	- If the timeout is exceeded, CMON will be stopped using SIGKILL.
+	- Example: `CMON_STOP_TIMEOUT=15`
 
 ## Service Management ##
 
