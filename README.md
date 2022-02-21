@@ -149,7 +149,7 @@ After a moment, you should be able to access the following ClusterControl Web UI
 	- Example: `MYSQL_ROOT_PASSWORD=MyPassW0rd`
 
 * `CMON_STOP_TIMEOUT={integer}`
-	- How long to wait (in seconds) for CMON to gracefully stop (SIGTERM) during container bootstrapping process. Default is 10.
+	- How long to wait (in seconds) for CMON to gracefully stop (SIGTERM) during container bootstrapping process. Default is 30.
 	- If the timeout is exceeded, CMON will be stopped using SIGKILL.
 	- Example: `CMON_STOP_TIMEOUT=15`
 

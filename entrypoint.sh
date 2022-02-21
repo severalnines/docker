@@ -4,7 +4,7 @@ set -e
 # set default value if not set
 [ -z "$CMON_PASSWORD" ] && cmon_password='cmon' || cmon_password=$CMON_PASSWORD
 [ -z "$MYSQL_ROOT_PASSWORD" ] && mysql_root_password='password' || mysql_root_password=$MYSQL_ROOT_PASSWORD
-[ -z "$CMON_STOP_TIMEOUT" ] && cmon_stop_timeout=10 || cmon_stop_timeout=$CMON_STOP_TIMEOUT
+[ -z "$CMON_STOP_TIMEOUT" ] && cmon_stop_timeout=30 || cmon_stop_timeout=$CMON_STOP_TIMEOUT
 
 # changes in 1.9.1 - start
 if [ -z "$DOCKER_HOST_ADDRESS" ]; then
@@ -393,6 +393,8 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 		fi
 	 	pidof cmon &>/dev/null && echo '>> CMON is still running. SIGKILL failed.' || echo '>> CMON stopped'
 		[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_pid"'
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_clock"'
 	fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
