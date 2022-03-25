@@ -51,7 +51,7 @@ ping_stats() {
 	MEM=$(python -c "import sys,urllib; print urllib.quote('${MEM}')")
 	LAST_MSG=$(python -c "import sys,urllib; print urllib.quote('${LAST_MSG}')")
 	CONTAINER=docker
-	wget -T 10 -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null
+	timeout 5 wget -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null
 }
 
 
