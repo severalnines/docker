@@ -13,12 +13,10 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.2, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.3, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.2 (1.9.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.2/Dockerfile)
 * [1.9.1 (1.9.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.1/Dockerfile)
 * [1.9.0 (1.9.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.0/Dockerfile)
-* [1.8.2 (1.8.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.2/Dockerfile)
-* [1.8.1 (1.8.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.1/Dockerfile)
-* [1.8.0 (1.8.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.8.0/Dockerfile)
 
 ## Overview ##
 
@@ -33,7 +31,8 @@ Supported database servers/clusters:
 * PostgreSQL (standalone & streaming replication)
 * TimescaleDB (standalone & streaming replication)
 * Redis (replication & Sentinel) - via ClusterControl GUI v2
-* SQL Server for Linux (standalone) - via ClusterControl GUI v2
+* SQL Server 2019 for Linux (standalone & Availability Group) - via ClusterControl GUI v2
+* Elasticsearch - via ClusterControl GUI v2
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 

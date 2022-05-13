@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+## ClusterControl 1.9.3-5451, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
+=======
 ## ClusterControl 1.9.2-5292, Percona Server 5.6, CentOS 7 64bit, PHP 7.3 (Remi)
+>>>>>>> abd9750fb3fced707104ef2f25c11774073c3e4c
 
 FROM centos:7
 MAINTAINER Ashraf Sharif <ashraf@severalnines.com>
@@ -72,5 +76,5 @@ COPY deploy-container.sh /deploy-container.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 ## cmon 9500, cmon-tls 9501, cmon-events 9510, cmon-ssh 9511, netcat 9999
-EXPOSE 80 443 9500 9501 9510 9511 9999
+EXPOSE 80 443 9500 9501 9510 9511 9999 19501 9443
 HEALTHCHECK CMD curl -sSf http://localhost/clustercontrol/ > /dev/null || exit 1
