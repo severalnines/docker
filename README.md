@@ -13,7 +13,8 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.3, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.4, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.3 (1.9.3/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.3/Dockerfile)
 * [1.9.2 (1.9.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.2/Dockerfile)
 * [1.9.1 (1.9.1/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.1/Dockerfile)
 * [1.9.0 (1.9.0/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.0/Dockerfile)
