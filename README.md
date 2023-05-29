@@ -14,9 +14,9 @@
 
 ## Supported Tags ##
 * [1.9.5, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.5 (1.9.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.5/Dockerfile)
 * [1.9.4 (1.9.4/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.4/Dockerfile)
 * [1.9.3 (1.9.3/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.3/Dockerfile)
-* [1.9.2 (1.9.2/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.2/Dockerfile)
 
 ## Overview ##
 
