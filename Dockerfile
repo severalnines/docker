@@ -10,8 +10,8 @@ ENV PACKAGES curl mailx cronie nc bind-utils clustercontrol clustercontrol2 clus
 RUN yum clean all
 RUN yum -y install wget epel-release && \
         rpm --import http://repo.severalnines.com/severalnines-repos.asc && \
-        wget http://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
-        wget http://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
+        wget --no-check-certificate https://severalnines.com/downloads/cmon/s9s-repo.repo -P /etc/yum.repos.d/ && \
+        wget --no-check-certificate https://repo.severalnines.com/s9s-tools/CentOS_7/s9s-tools.repo -P /etc/yum.repos.d/ && \
         yum -y install http://rpms.famillecollet.com/enterprise/remi-release-7.rpm && \
         sed -i s/enabled=0/enabled=1/g /etc/yum.repos.d/remi-php73.repo && \
         yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm && \
