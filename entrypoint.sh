@@ -393,8 +393,8 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 		fi
 	 	pidof cmon &>/dev/null && echo '>> CMON is still running. SIGKILL failed.' || echo '>> CMON stopped'
 		[ -e /var/run/cmon.pid ] && rm -f /var/run/cmon.pid
-		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_pid"'
-		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_clock"'
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_pid"' || true
+		mysql --defaults-file=$MYSQL_CMON_CNF --defaults-group-suffix=_cmon -A -f -Bse 'DELETE FROM cmon.cdt_folders WHERE full_path = "/.runtime/controller_clock"' || true
 	fi
 
 	if ! $(grep -q CONTAINER $CCUI_BOOTSTRAP); then
