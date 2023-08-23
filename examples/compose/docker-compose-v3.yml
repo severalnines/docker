@@ -1,0 +1,44 @@
+version: '3'
+services:
+  clustercontrol:
+    image: severalnines/clustercontrol:latest
+    hostname: clustercontrol
+    ports:
+      - 5000:80
+      - 5001:443
+      - 9443:9443
+      - 19501:19501
+    volumes:
+      - clustercontrol-cmon.d:/etc/cmon.d
+      - clustercontrol-datadir:/var/lib/mysql
+      - clustercontrol-sshkeys:/root/.ssh
+      - clustercontrol-cmonlib:/var/lib/cmon
+      - clustercontrol-backups:/root/backups
+      - prom-data:/var/lib/prometheus
+      - prom-conf:/etc/prometheus
+    environment:
+      - DOCKER_HOST_ADDRESS={{.Node.Hostname}}
+      - CMON_PASSWORD=DAakJt8ZpA3l&fK@CzgHY8ydH
+      - MYSQL_ROOT_PASSWORD=DAakJt8ZpA3l&fK@CzgHY8ydH
+      - CMON_STOP_TIMEOUT=15
+    networks:
+      cc_net:
+        ipv4_address: 192.168.10.10
+        aliases:
+          - clustercontrol
+
+volumes:
+  clustercontrol-cmon.d:
+  clustercontrol-datadir:
+  clustercontrol-sshkeys:
+  clustercontrol-cmonlib:
+  clustercontrol-backups:
+  prom-data:
+  prom-conf:
+
+networks:
+  cc_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
