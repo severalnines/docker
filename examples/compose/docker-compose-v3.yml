@@ -7,7 +7,7 @@ services:
       - 5000:80
       - 5001:443
       - 9443:9443
-      - 19501:19501
+      - 9999:9999
     volumes:
       - clustercontrol-cmon.d:/etc/cmon.d
       - clustercontrol-datadir:/var/lib/mysql
@@ -17,7 +17,6 @@ services:
       - prom-data:/var/lib/prometheus
       - prom-conf:/etc/prometheus
     environment:
-      - DOCKER_HOST_ADDRESS={{.Node.Hostname}}
       - CMON_PASSWORD=DAakJt8ZpA3l&fK@CzgHY8ydH
       - MYSQL_ROOT_PASSWORD=DAakJt8ZpA3l&fK@CzgHY8ydH
       - CMON_STOP_TIMEOUT=15

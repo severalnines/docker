@@ -7,9 +7,8 @@ services:
       - "5000:80"
       - "5001:443"
       - "9443:9443"
-      - "19501:19501"
+      - "9999:9999"
     environment:
-      DOCKER_HOST_ADDRESS: 192.168.11.111
       CMON_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
       MYSQL_ROOT_PASSWORD: DAakJ[t8-Zp=A3{&%K@CzgHY8&dH
     volumes:
