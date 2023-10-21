@@ -5,22 +5,7 @@ set -e
 [ -z "$CMON_PASSWORD" ] && cmon_password='cmon' || cmon_password=$CMON_PASSWORD
 [ -z "$MYSQL_ROOT_PASSWORD" ] && mysql_root_password='password' || mysql_root_password=$MYSQL_ROOT_PASSWORD
 [ -z "$CMON_STOP_TIMEOUT" ] && cmon_stop_timeout=30 || cmon_stop_timeout=$CMON_STOP_TIMEOUT
-
-# changes in 1.9.1 - start
-if [ -z "$DOCKER_HOST_ADDRESS" ]; then
-	echo '>> Unable to start because DOCKER_HOST_ADDRESS is empty.'
-	echo '>> New in ClusterControl 1.9.1:'
-	echo '   Kindly specify the DOCKER_HOST_ADDRESS environment variable.'
-	echo '   This value should be the same as the Docker host primary IP address (or hostname/FQDN) where you will connect.'
-	echo '   If the container is running on a bridge network, do publish port 9443 and 19501 as well.'
-	echo '   This is mandatory for ClusterControl GUI v2 to operate correctly.'
-	echo '   Example: '
-	echo '       -e DOCKER_HOST_ADDRESS="192.168.10.10" \'
-	echo '	     -p 9443:9443 \'
-	echo '	     -p 19501:19501 \'
-	exit 1
-fi
-# changes in 1.9.1 - end
+[ -z "$INNODB_BUFFER_POOL" ] && innodb_buffer_pool='1G' || innodb_buffer_pool=$INNODB_BUFFER_POOL
 
 CMON_CONFIG=/etc/cmon.d/cmon.cnf
 SSH_KEY=/root/.ssh/id_rsa
@@ -46,10 +31,10 @@ ping_stats() {
 	[[ $(command -v cmon) ]] && VERSION=$(cmon --version | awk '/version/ {print $3}')
 	UUID=$(basename "$(head /proc/1/cgroup)" | sed "s/docker-\(.*\).scope/\\1/")
 	OS=$(cat /proc/version)
-	OS=$(python -c "import sys,urllib; print urllib.quote('${OS}')")
+	OS=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote('${OS}'))")
 	MEM=$(free -m | awk '/Mem:/ { print "T:" $2, "F:" $4}')
-	MEM=$(python -c "import sys,urllib; print urllib.quote('${MEM}')")
-	LAST_MSG=$(python -c "import sys,urllib; print urllib.quote('${LAST_MSG}')")
+	MEM=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote('${MEM}'))")
+	LAST_MSG=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote('${LAST_MSG}'))")
 	CONTAINER=docker
 	timeout 5 wget -qO- --post-data="version=${VERSION:=NA}&uuid=${UUID}&os=${OS}&mem=${MEM}&rc=${INSTALLATION_STATUS}&msg=${LAST_MSG}&container=${CONTAINER}" https://severalnines.com/service/diag.php &>/dev/null || true
 }
@@ -78,8 +63,8 @@ else
 fi
 
 if [ $MYSQL_INITIALIZE -eq 1 ]; then
-	echo ">> Datadir is empty. Initializing datadir.."
-	mysql_install_db --user=mysql --datadir="$DATADIR" --rpm
+	echo ">> MySQL datadir is empty. Initializing datadir.."
+	mariadb-install-db --user=mysql --datadir="$DATADIR" --rpm
 fi
 
 echo ">> Ensure MySQL datadir has correct permission/ownership.."
@@ -91,30 +76,45 @@ echo '>> Starting MySQL daemon..'
 [ -f $SOCKETFILE ] && rm -f $SOCKETFILE
 
 start_mysqld() {
-	/usr/bin/mysqld_safe --plugin-dir=/usr/lib64/mysql/plugin --socket=${SOCKETFILE} &
+	/usr/bin/mariadbd-safe --plugin-dir=/usr/lib64/mysql/plugin --socket=${SOCKETFILE} --datadir="$DATADIR" &
 }
 
 stop_mysqld() {
 	echo
-	echo '>> Stopping MySQL daemon so Supervisord can take over'
-	killall -15 mysqld_safe mysqld
+	echo '>> Stopping MariaDB daemon so Supervisord can take over..'
+	killall -15 mariadbd-safe mariadbd
 	sleep 3
 }
 
-if [ -z $(pidof mysqld) ]; then
+if [ -z $(pidof mariadbd) ]; then
 	start_mysqld
+	sleep 5
+	# check if auto.cnf exists (created by PS 5.6) to flag mariadb-upgrade
+	if [ -f ${DATADIR}/auto.cnf ]; then
+		echo ">> Found ${DATADIR}/auto.cnf. Attempting to perform mariadb-upgrade.."
+		#mariadb-upgrade --defaults-group-suffix=_cmon
+		mariadb-upgrade -uroot "-p${mysql_root_password}"
+		if [ $? -eq 0 ]; then
+			echo '>> Command mariadb-upgrade succeeded.'
+			# remove auto.cnf so it won't trigger mariadb-upgrade next startup
+			rm -f ${DATADIR}/auto.cnf
+		else
+			echo '>> An attempt to perform MariaDB upgrade failed. Aborting..'
+			exit 1
+		fi
+	fi
 else
-	killall -9 mysqld
+	killall -9 mariadbd
 	start_mysqld
 fi
 sleep 3
 
 echo
-if [ ! -z $(pidof mysqld) ]; then
-	echo '>> MySQL started. Looking for existing cmon/dcps data..'
+if [ ! -z $(pidof mariadbd) ]; then
+	echo '>> MariaDB started. Looking for existing cmon data..'
 	echo
 	if [ "$(ls -A $DATADIR/cmon 2>/dev/null)" ]; then
-		echo '>> Found existing cmon/dcps database'
+		echo '>> Found existing cmon database'
 		echo '>> Setting INITIALIZED=1'
 		INITIALIZED=1
 	else
@@ -123,14 +123,14 @@ if [ ! -z $(pidof mysqld) ]; then
 		INITIALIZED=0
 	fi
 else
-	echo '>> MySQL failed to start. Aborting..'
+	echo '>> MariaDB failed to start. Aborting..'
 	INSTALLATION_STATUS=1
-	LAST_MSG='MySQL failed to start. Aborting..'
+	LAST_MSG='MariaDB failed to start. Aborting..'
 	exit 1
 fi
 
 create_mysql_cmon_cnf() {
-	## Create /etc/cmon.d/my_cmon.cnf
+	## Create /etc/my_cmon.cnf
 	if [ -f $CMON_CONFIG ]; then
 		rm -f /etc/cmon.cnf
 	elif [ -f /etc/cmon.cnf ]; then
@@ -142,6 +142,7 @@ create_mysql_cmon_cnf() {
 user=cmon
 password=$cmon_pwd
 EOF
+  chmod 600 $MYSQL_CMON_CNF
 }
 
 generate_ssh_key() {
@@ -168,7 +169,7 @@ generate_ssh_key() {
 
 if [ $INITIALIZED -eq 1 ]; then
 
-	## Bootstrap ClusterControl
+	## Bootstrap ClusterControl, INITIALIZED=1
 
 	sleep 5
 	[ ! -f $MYSQL_CMON_CNF ] && create_mysql_cmon_cnf
@@ -177,7 +178,7 @@ if [ $INITIALIZED -eq 1 ]; then
 
 	if [ ! -z $cmon_token ]; then
 		CMON_EXISTING_TOKEN=$cmon_token
-		echo ">> Existing token: $CMON_EXISTING_TOKEN"
+		echo ">> Detected existing token: $CMON_EXISTING_TOKEN"
 
 		echo
 		echo '>> Updating API token..'
@@ -217,7 +218,7 @@ if [ $INITIALIZED -eq 1 ]; then
 		echo 'Unable to retrieve existing token.'
 	fi
 else
-	## Start ClusterControl initialization
+	## Initialize ClusterControl, INITIALIZED=0
 
 	[ ! -f $SSH_KEY ] && generate_ssh_key
 
@@ -234,6 +235,7 @@ mysql_password=$cmon_password
 hostname=$HOSTNAME
 rpc_key=$CMON_TOKEN
 EOF
+
 	## Configure ClusterControl UI
 
 	echo
@@ -243,24 +245,24 @@ EOF
 	sed -i "s|DBPORT|3306|g" $CCUI_BOOTSTRAP
 	sed -i "s|RPCTOKEN|$CMON_TOKEN|g" $CCUI_BOOTSTRAP
 
-	mysql=( mysql -uroot -h127.0.0.1 )
+	mysql=( mysql -uroot )
 
 	if echo 'SELECT 1' | "${mysql[@]}" &> /dev/null; then
 
 		## Create schemas and import
 		echo
 		echo '>> Importing CMON data..'
-		mysql -uroot -h127.0.0.1 -e 'create schema cmon; create schema dcps;' && \
-			mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_db.sql && \
-				mysql -f -uroot -h127.0.0.1 cmon < /usr/share/cmon/cmon_data.sql && \
-					mysql -f -uroot -h127.0.0.1 dcps < $WWWROOT/clustercontrol/sql/dc-schema.sql
+		mysql -uroot -e 'create schema cmon; create schema dcps;' && \
+			mysql -f -uroot cmon < /usr/share/cmon/cmon_db.sql && \
+				mysql -f -uroot cmon < /usr/share/cmon/cmon_data.sql && \
+					mysql -f -uroot dcps < $WWWROOT/clustercontrol/sql/dc-schema.sql
 
 		## Configure CMON user & password
 		echo
 		echo '>> Configuring CMON user and MySQL root password..'
+    /usr/bin/mysqladmin --socket=/var/lib/mysql/mysql.sock -uroot password 'pass123!@#'
 		TMPFILE=/tmp/configure_cmon.sql
 		cat > "$TMPFILE" << EOF
-UPDATE mysql.user SET Password=PASSWORD('$mysql_root_password') WHERE User='root';
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test; DELETE FROM mysql.db WHERE DB='test' OR DB='test\\_%';
@@ -270,11 +272,10 @@ GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'$IP_ADDRESS' IDENTIFIED BY '$cmon_passwor
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'$HOSTNAME' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'cmon'@'%' IDENTIFIED BY '$cmon_password' WITH GRANT OPTION;
 REPLACE INTO dcps.apis(id, company_id, user_id, url, token) VALUES (1, 1, 1, 'https://127.0.0.1/cmonapi', '$CMON_TOKEN');
-CREATE TABLE cmon.containers (id INT PRIMARY KEY AUTO_INCREMENT, did INT, hostname VARCHAR(255), ip VARCHAR(128), cluster_type VARCHAR(128), cluster_name VARCHAR(255), vendor VARCHAR(128), provider_version VARCHAR(16), db_root_password VARCHAR(255), initial_size INT, deploying TINYINT NOT NULL DEFAULT 0, deployed TINYINT NOT NULL DEFAULT 0, created TINYINT NOT NULL DEFAULT 0);
 FLUSH PRIVILEGES;
 EOF
 
-		mysql -uroot -h127.0.0.1 < $TMPFILE; rm -f $TMPFILE
+		mysql -uroot < $TMPFILE; rm -f $TMPFILE
 
 		echo
 		echo '>> Configuring CMON MySQL defaults file..'
@@ -283,6 +284,7 @@ EOF
 user=cmon
 password=$cmon_password
 EOF
+    chmod 600 $MYSQL_CMON_CNF
 
 	fi
 
@@ -293,7 +295,7 @@ EOF
 	[ -z "$MYSQL_ROOT_PASSWORD" ] &&	echo "Generated MySQL root password: $mysql_root_password" >> $BANNER_FILE || echo "MySQL root password: $mysql_root_password" >> $BANNER_FILE
 	echo "Generated ClusterControl API Token: $CMON_TOKEN" >> $BANNER_FILE
 	echo "Detected IP address: $IP_ADDRESS" >> $BANNER_FILE
-	echo "To access ClusterControl UI, go to http://${IP_ADDRESS}/clustercontrol" >> $BANNER_FILE
+	echo "To access ClusterControl UI, go to https://${IP_ADDRESS}/" >> $BANNER_FILE
 fi
 
 if ! $(/usr/bin/grep -q dba /etc/passwd); then
@@ -343,30 +345,6 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 		echo '>> Please fix it later, once container has started.'
 	fi
 
-	## Handling /etc/cmon-ldap.cnf
-	## Workaround: make sure cmon-ldap.cnf is located under /etc/cmon.d for persistent storage
-
-#	DEFAULT_CMON_LDAP=/etc/cmon-ldap.cnf
-#	DOCKER_CMON_LDAP=/etc/cmon.d/cmon-ldap.cnf
-
-#	echo
-#	echo '>> Checking /etc/cmon-ldap.cnf..'
-
-#	if [ -f $DOCKER_CMON_LDAP ]; then
-#		if [ -L $DEFAULT_CMON_LDAP ]; then
-#			echo '>> /etc/cmon-ldap.cnf symlinked to /etc/cmon.d/cmon-ldap.cnf..'
-#		else
-#			rm -f $DEFAULT_CMON_LDAP
-#			echo '>> Linking /etc/cmon-ldap.cnf with existing /etc/cmon.d/cmon-ldap.cnf..'
-#			ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
-#		fi
-#	else
-#		echo '>> Cant find existing /etc/cmon.d/cmon-ldap.cnf. Trying to symlink it if exists..'
-#		[ -f $DEFAULT_CMON_LDAP ] && mv $DEFAULT_CMON_LDAP $DOCKER_CMON_LDAP && ln -sf $DOCKER_CMON_LDAP $DEFAULT_CMON_LDAP
-#	fi
-
-	## Changes 1.8.2 - end ##
-
 	## CMON process clean up. Possible fix for #8168
 	echo
 	echo '>> Checking PID of cmon process..'
@@ -401,8 +379,10 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 		echo "define('CONTAINER', 'docker');" >> $CCUI_BOOTSTRAP
 	fi
 	
-	CCUI2_CONFIG=/var/www/html/clustercontrol2/config.js
-	sed -i "s|^  CMON_API_URL.*|  CMON_API_URL: 'https:\/\/${DOCKER_HOST_ADDRESS}:19501\/v2',|g" $CCUI2_CONFIG
+  # As of 1.9.7, the following is unnecessary
+  
+	#CCUI2_CONFIG=/var/www/html/clustercontrol2/config.js
+	#sed -i "s|^  CMON_API_URL.*|  CMON_API_URL: 'https:\/\/${DOCKER_HOST_ADDRESS}:19501\/v2',|g" $CCUI2_CONFIG
 fi
 
 # Clean up
@@ -418,5 +398,4 @@ ping_stats
 
 echo ""
 echo ">> Starting Supervisord and all related services:"
-echo ">> sshd, httpd, cmon, cmon-events, cmon-ssh, cc-auto-deployment"
 /usr/bin/supervisord -c /etc/supervisord.conf

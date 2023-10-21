@@ -13,10 +13,9 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.6, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.7, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.6 (1.9.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.6/Dockerfile)
 * [1.9.5 (1.9.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.5/Dockerfile)
-* [1.9.4 (1.9.4/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.4/Dockerfile)
-* [1.9.3 (1.9.3/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.3/Dockerfile)
 
 ## Overview ##
 
@@ -30,9 +29,9 @@ Supported database servers/clusters:
 * MongoDB (replica set & sharded cluster)
 * PostgreSQL (standalone & streaming replication)
 * TimescaleDB (standalone & streaming replication)
-* Redis (replication & Sentinel) - via ClusterControl GUI v2
-* SQL Server 2019 for Linux (standalone & Availability Group) - via ClusterControl GUI v2
-* Elasticsearch - via ClusterControl GUI v2
+* Redis (replication with Sentinel)
+* SQL Server 2019 for Linux (standalone & Availability Group)
+* Elasticsearch
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
 
@@ -43,11 +42,12 @@ To pull ClusterControl images, simply:
 $ docker pull severalnines/clustercontrol
 ```
 
-The image is based on CentOS 7 with Apache 2.4, which consists of ClusterControl packages and prerequisite components:
-* ClusterControl controller, GUI v1, GUI v2, cloud, notification and web-ssh packages installed via Severalnines repository.
-* MySQL, CMON database, cmon user grant and dcps database for ClusterControl UI.
-* Apache, file and directory permission for ClusterControl UI with SSL installed.
+The image is based on RockyLinux 9 with Apache 2.4, which consists of ClusterControl packages and prerequisite components:
+* ClusterControl controller, GUI v1 (port 9443), GUI v2, cloud, notification and web-ssh packages installed via Severalnines repository.
+* MariaDB, CMON database, cmon user grant and dcps database for ClusterControl UI.
+* Apache, file and directory permission for ClusterControl GUI with SSL installed.
 * SSH key for ClusterControl usage.
+* ClusterControl CLI (s9s)
 
 ## Run Container ##
 
@@ -58,8 +58,15 @@ $ docker run -d severalnines/clustercontrol
 
 However, for production use, users are advised to run with sticky IP address/hostname and persistent volumes to survive across restarts, upgrades and rescheduling, as shown below:
 
+---
+**ATTENTION**
+
+If you are upgrading from ClusterControl 1.9.6 (or older) to 1.9.7 (Sept 2023), please see [UPGRADING-TO-1.9.7.md](https://github.com/severalnines/docker/blob/master/UPGRADING-TO-1.9.7.md). There are additional steps to stop and recreate the container in order to perform a proper upgrade.
+
+---
+
 ```bash
-# Create a Docker network
+# Create a Docker network for persistent hostname & ip address
 $ docker network create --subnet=192.168.10.0/24 db-cluster
 
 # Start the container
@@ -70,46 +77,7 @@ $ docker run -d --name clustercontrol \
 -p 5000:80 \
 -p 5001:443 \
 -p 9443:9443 \
--p 19501:19501 \
--e DOCKER_HOST_ADDRESS=192.168.11.111 \
--v /storage/clustercontrol/cmon.d:/etc/cmon.d \
--v /storage/clustercontrol/datadir:/var/lib/mysql \
--v /storage/clustercontrol/sshkey:/root/.ssh \
--v /storage/clustercontrol/cmonlib:/var/lib/cmon \
--v /storage/clustercontrol/backups:/root/backups \
-severalnines/clustercontrol
-```
-
----
-**ATTENTION**
-
-Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandatory for ClusterControl GUI v2 to run correctly. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
-
----
-
-The recommended persistent volumes are:
-* `/etc/cmon.d` - ClusterControl configuration files.
-* `/var/lib/mysql` - MySQL datadir to host `cmon` and `dcps` database.
-* `/root/.ssh` - SSH private and public keys.
-* `/var/lib/cmon` - ClusterControl internal files.
-* `/root/backups` - Default backup directory only if ClusterControl is the backup destination
-
-Alternatively, if you would like to enable agent-based monitoring via Prometheus, you have to make the following paths persistent as well:
-* `/var/lib/prometheus` - Prometheus data directory.
-* `/etc/prometheus` - Prometheus configuration directory.
-
-Therefore, the run command for agent-based monitoring via Prometheus would be:
-
-```bash
-$ docker run -d --name clustercontrol \
---network db-cluster \
---ip 192.168.10.10 \
--h clustercontrol \
--p 5000:80 \
--p 5001:443 \
--p 9443:9443 \
--p 19501:19501 \
--e DOCKER_HOST_ADDRESS=192.168.11.111 \
+-p 9999:9999 \
 -v /storage/clustercontrol/cmon.d:/etc/cmon.d \
 -v /storage/clustercontrol/datadir:/var/lib/mysql \
 -v /storage/clustercontrol/sshkey:/root/.ssh \
@@ -120,24 +88,36 @@ $ docker run -d --name clustercontrol \
 severalnines/clustercontrol
 ```
 
+The suggested port mappings are:
+* 5000 -> 80 - ClusterControl GUI v2 HTTP
+* 5001 -> 443 - ClusterControl GUI v2 HTTPS
+* 9443 -> 9443 - ClusterControl GUI v1 HTTPS
+* 9999 -> 9999 - Backup streaming port, only if ClusterControl is the database backup destination
+
+The recommended persistent volumes are:
+* `/etc/cmon.d` - ClusterControl configuration files.
+* `/var/lib/mysql` - MySQL datadir to host `cmon` and `dcps` database.
+* `/root/.ssh` - SSH private and public keys.
+* `/var/lib/cmon` - ClusterControl internal files.
+* `/root/backups` - Default backup directory only if ClusterControl is the database backup destination.
+* `/var/lib/prometheus` - Prometheus data directory.
+* `/etc/prometheus` - Prometheus configuration directory.
+
 ---
 **ATTENTION**
 
-Starting from ClusterControl 1.9.1 (Dec 2021), `DOCKER_HOST_ADDRESS` is mandatory for ClusterControl GUI v2 to run correctly. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
+Starting from ClusterControl 1.9.7 (Sep 2023), the enviroment variable `DOCKER_HOST_ADDRESS` is no longer necessary. It was only intended for version 1.9.1 until 1.9.6.
 
 ---
 
-After a moment, you should be able to access the following ClusterControl Web UIs:
-* ClusterControl GUI v1 HTTP: **http://192.168.11.111:5000/clustercontrol**
-* ClusterControl GUI v1 HTTPS: **https://192.168.11.111:5001/clustercontrol**
-* ClusterControl GUI v2 HTTPS: **https://192.168.11.111:9443/**
+After a moment, you should be able to access the following ClusterControl web GUIs (assuming the Docker host IP address is 192.168.11.111):
+* ClusterControl GUI v2 HTTP: **http://192.168.11.111:5000/**
+* ClusterControl GUI v2 HTTPS: **https://192.168.11.111:5001/** (recommended)
+* ClusterControl GUI v1 HTTPS: **https://192.168.11.111:9443/clustercontrol** 
+
+Note that starting from ClusterControl 1.9.7, ClusterControl GUI v2 is the default frontend graphical user interface (GUI) for ClusterControl. ClusterControl GUI v1 has reached the end of the development cycle and is considered a feature-freeze product. All new developments will be happening on ClusterControl GUI v2.
 
 ## Environment Variables ##
-
-* `DOCKER_HOST_ADDRESS={IP address or hostname}`
-        - This value should be the same as the Docker host primary IP address, or hostname/FQDN that resolves to the Docker host's primary IP address.
-	- Starting from ClusterControl 1.9.1, this environment variable is mandatory. If the container is running on Docker bridge network, additional ports 9443 and 19501 must be published.
-        - Example: `DOCKER_HOST_ADDRESS=192.168.11.111`
 
 * `CMON_PASSWORD={string}`
 	- MySQL password for user 'cmon'. Default to 'cmon'. Use `docker secret` is recommended.
@@ -150,41 +130,40 @@ After a moment, you should be able to access the following ClusterControl Web UI
 * `CMON_STOP_TIMEOUT={integer}`
 	- How long to wait (in seconds) for CMON to gracefully stop (SIGTERM) during container bootstrapping process. Default is 30.
 	- If the timeout is exceeded, CMON will be stopped using SIGKILL.
-	- Example: `CMON_STOP_TIMEOUT=15`
+	- Example: `CMON_STOP_TIMEOUT=30`
 
 ## Service Management ##
 
 ClusterControl requires a number of processes to be running:
-* sshd - SSH daemon. The main communication channel.
-* mysqld - MySQL backend runs on Percona Server 5.6.
+* mariadbd - ClusterControl database runs on MariaDB 10.5.
 * httpd - Web server running on Apache 2.4.
-* cmon - ClusterControl backend daemon. The brain of ClusterControl. It depends on `mysqld` and `sshd`.
+* php-fpm - PHP 7.4 FastCGI process manager for ClusterControl GUI v1.
+* cmon - ClusterControl backend daemon. The brain of ClusterControl which depends on `mariadbd`.
 * cmon-ssh - ClusterControl web-based SSH daemon, which depends on `cmon` and `httpd`.
 * cmon-events - ClusterControl notifications daemon, which depends on `cmon` and `httpd`.
 * cmon-cloud - ClusterControl cloud integration daemon, which depends on `cmon` and `httpd`.
-* cc-auto-deployment - ClusterControl automatic deployment script, running as a background process, which depends on `cmon`.
 
 These processes are being controlled by Supervisord, a process control system. To manage a process, one would use `supervisorctl` client as shown in the following example:
 
 ```bash
-[root@physical-host]$ docker exec -it clustercontrol /bin/bash
-[root@clustercontrol /]# supervisorctl
-cc-auto-deployment               RUNNING   pid 570, uptime 2 days, 19:11:54
-cmon                             RUNNING   pid 573, uptime 2 days, 19:11:54
-cmon-events                      RUNNING   pid 576, uptime 2 days, 19:11:54
-cmon-ssh                         RUNNING   pid 575, uptime 2 days, 19:11:54
-httpd                            RUNNING   pid 571, uptime 2 days, 19:11:54
-mysqld                           RUNNING   pid 577, uptime 2 days, 19:11:54
-sshd                             RUNNING   pid 572, uptime 2 days, 19:11:54
+[root@docker-host]$ docker exec -it clustercontrol /bin/bash
+$ supervisorctl
+cmon                             RUNNING   pid 504, uptime 0:11:37
+cmon-cloud                       RUNNING   pid 505, uptime 0:11:37
+cmon-events                      RUNNING   pid 506, uptime 0:11:37
+cmon-ssh                         RUNNING   pid 507, uptime 0:11:37
+httpd                            RUNNING   pid 509, uptime 0:11:37
+mariadbd                         RUNNING   pid 503, uptime 0:11:37
+php-fpm                          RUNNING   pid 508, uptime 0:11:37
 supervisor> restart cmon
 cmon: stopped
 cmon: started
 supervisor> status cmon
-cmon                             RUNNING   pid 2838, uptime 0:11:12
+cmon                             RUNNING   pid 504, uptime 0:00:21
 supervisor>
 ```
 
-In some cases, you might need to restart the related service after a manual upgrade or configuration tuning. Details on the start commands can be found inside `conf/supervisord.conf`.
+In some cases, you might need to restart the corresponding services after a manual upgrade or configuration tuning. Details on the start commands can be found inside `conf/supervisord.conf`.
 
 ## Examples ##
 
@@ -200,3 +179,5 @@ If you have any questions, you are welcome to get in touch via our [contact us](
 ## Disclaimer ##
 
 Although Severalnines offers ClusterCluster as a Docker image, it is not intended for production usage. ClusterControl product direction is never intended to run on a container environment due to its internal logic and system design. We are maintaining the Docker image on a best-effort basis, and it is not part of the product development projection and pipeline.
+
+Note that starting from ClusterControl 1.9.7, ClusterControl GUI v2 is the default frontend graphical user interface (GUI) for ClusterControl. ClusterControl GUI v1 has reached the end of the development cycle and is considered a feature-freeze product. All new developments will be happening on ClusterControl GUI v2.
