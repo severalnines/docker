@@ -6,8 +6,8 @@ LABEL contact="support@severalnines.com"
 LABEL github-repo="https://github.com/severalnines/docker"
 LABEL description="ClusterControl container image"
 LABEL release="1.9.7"
-LABEL version="1.9.7-6806"
-LABEL release-date="Nov 21st, 2023"
+LABEL version="1.9.7-7128"
+LABEL release-date="Dec 15th, 2023"
 
 # install packages
 RUN dnf clean all
