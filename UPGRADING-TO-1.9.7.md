@@ -23,7 +23,7 @@ Note that starting from ClusterControl 1.9.7, ClusterControl GUI v2 is the defau
 Other notable changes are:
 
 * We have deprecated `deploy-container.sh` and `auto-deployment` script.
-* Supervisord is updated to the latest version with proper a priority setting.
+* Supervisord is updated to the latest version with a proper priority setting.
 * The entrypoint script will attempt to perform the database upgrade (mariadb-upgrade) if it finds `auto.cnf` (created by older version of MySQL 5.6).
 
 ## Upgrade Instructions ##
