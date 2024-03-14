@@ -1,5 +1,11 @@
 # Upgrading to 1.9.7 Docker Image #
 
+---
+!! Attention !!
+
+These instructions apply if you want to upgrade from 1.9.6 and older to 1.9.7 and later using Docker, including 1.9.8. Skip these instructions if you are upgrading from 1.9.7.
+---
+
 ## Table of Contents ##
 
 1. [Changes and Improvements](#changes-and-improvements)

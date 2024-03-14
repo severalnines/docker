@@ -13,9 +13,9 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.7, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.8, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.7 (1.9.7/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.7/Dockerfile)
 * [1.9.6 (1.9.6/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.6/Dockerfile)
-* [1.9.5 (1.9.5/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.5/Dockerfile)
 
 ## Overview ##
 
@@ -27,10 +27,10 @@ Supported database servers/clusters:
 * MySQL/MariaDB (standalone & replication)
 * MySQL Cluster (NDB)
 * MongoDB (replica set & sharded cluster)
-* PostgreSQL (standalone & streaming replication)
+* PostgreSQL/EnterpriseDB (standalone & streaming replication)
 * TimescaleDB (standalone & streaming replication)
 * Redis (replication with Sentinel)
-* SQL Server 2019 for Linux (standalone & Availability Group)
+* SQL Server 2019/2022 for Linux (standalone & Availability Group)
 * Elasticsearch
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
@@ -61,7 +61,7 @@ However, for production use, users are advised to run with sticky IP address/hos
 ---
 **ATTENTION**
 
-If you are upgrading from ClusterControl 1.9.6 (or older) to 1.9.7 (Sept 2023), please see [UPGRADING-TO-1.9.7.md](https://github.com/severalnines/docker/blob/master/UPGRADING-TO-1.9.7.md). There are additional steps to stop and recreate the container in order to perform a proper upgrade.
+If you are upgrading from ClusterControl 1.9.6 (or older) to 1.9.7 (Sept 2023) or 1.9.8 (Feb 2024), please see [UPGRADING-TO-1.9.7.md](https://github.com/severalnines/docker/blob/master/UPGRADING-TO-1.9.7.md). There are additional steps to stop and recreate the container in order to perform a proper upgrade. Ignore this if you are upgrading from 1.9.7.
 
 ---
 
