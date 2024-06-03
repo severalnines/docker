@@ -13,9 +13,9 @@
 9. [Disclaimer](#disclaimer)
 
 ## Supported Tags ##
-* [1.9.8, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [2.0.0, latest (master/Dockerfile)](https://github.com/severalnines/docker/blob/master/Dockerfile)
+* [1.9.8 (1.9.8/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.8/Dockerfile)
 * [1.9.7 (1.9.7/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.7/Dockerfile)
-* [1.9.6 (1.9.6/Dockerfile)](https://github.com/severalnines/docker/blob/1.9.6/Dockerfile)
 
 ## Overview ##
 
@@ -29,8 +29,8 @@ Supported database servers/clusters:
 * MongoDB (replica set & sharded cluster)
 * PostgreSQL/EnterpriseDB (standalone & streaming replication)
 * TimescaleDB (standalone & streaming replication)
-* Redis (replication with Sentinel)
-* SQL Server 2019/2022 for Linux (standalone & Availability Group)
+* Redis (replication with Sentinel & cluster)
+* Microsoft SQL Server 2019/2022 for Linux (standalone & Availability Group)
 * Elasticsearch
 
 More details at [Severalnines](http://www.severalnines.com/clustercontrol) website.
