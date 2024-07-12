@@ -340,7 +340,15 @@ if ! $(/usr/bin/grep -q dba /etc/passwd); then
 	echo '>> Testing ccrpc user..'
 	if $S9S_CLI user --cmon-user=ccrpc --password=${CMON_TOKEN} --list &>/dev/null; then
 		echo '>> Looks good.'
-		$S9S_CLI user --create --generate-key --new-password=admin --group=admins ccsetup || :
+
+		if [ $INITIALIZED -eq 1 ]; then
+			echo '>> Removing setup user.'
+			$S9S_CLI user --delete ccsetup || :
+		else
+			echo '>> Creating ccsetup user.'
+			$S9S_CLI user --create --generate-key --new-password=admin --group=admins ccsetup || :
+		fi
+		
 	else
 		echo '>> Unable to connect to the cmon controller as ccrpc user.'
 		echo '>> Please fix it later, once container has started.'
