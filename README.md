@@ -1,5 +1,39 @@
 # ClusterControl Docker Image #
 
+---
+
+## !! ATTENTION !!
+
+## Deprecation Notice: ClusterControl Docker Image ##
+
+Effective immediately, the standalone ClusterControl Docker image is deprecated and will no longer receive updates or official support. This change is part of our ongoing effort to streamline deployment workflows and provide a more robust, scalable solution for managing your database clusters.
+
+### What’s Changing
+
+- Docker Image Deprecation: We will no longer publish new versions or provide support for the existing ClusterControl Docker image.
+- Replacement: All new deployments should transition to the ClusterControl Helm Chart, which offers a more integrated, reliable, and Kubernetes-native method for installing and managing ClusterControl.
+
+### Why the Change?
+
+- Enhanced Features: The [ClusterControl Helm Chart](https://github.com/severalnines/helm-charts/tree/main/charts/clustercontrol) includes improved configuration, scalability, and lifecycle management features that are not available with a standalone Docker container.
+- Kubernetes-Native: By focusing on a Helm-based deployment, we can provide a streamlined approach that fully aligns with modern, containerized environments and best practices.
+- Service decoupling: ClusterControl can run in a containerized environment with the help of other auxilary containers like cmon-sd, prometheus/victoriametrics, nginx ingress, innodb cluster (using MySQL Operator).
+
+### Timeline
+
+- Immediate Deprecation: No further releases or maintenance updates will be provided for the Docker image.
+- Support Discontinuation: Any existing issues or questions related to the Docker image will be addressed on a best-effort basis until the end of 2025, if applicable. After this date, the image is considered fully unsupported.
+
+### Next Steps
+
+- Plan Your Migration: Review our [ClusterControl Helm Chart Documentation](https://github.com/severalnines/helm-charts/tree/main/charts/clustercontrol) to understand requirements and migration steps.
+- Backup & Transition: Before decommissioning the old container, ensure your data and configurations are safely backed up.
+- Deploy via Helm: Use Helm to install and manage the latest version of ClusterControl, leveraging new features and improvements.
+
+If you have any questions or need assistance migrating to the Helm chart, please reach out to [our support team](https://support.severalnines.com/hc/en-us/requests/new) or consult the detailed installation guides available in [our documentation](https://docs.severalnines.com). We appreciate your cooperation and look forward to continuing to improve your ClusterControl experience with this new, more powerful deployment method.
+
+---
+
 ## Table of Contents ##
 
 1. [Supported Tags](#supported-tags)
